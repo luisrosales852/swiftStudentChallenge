@@ -101,7 +101,7 @@ final class Recording {
     /// Performs transcription off the main actor
     private static nonisolated func performTranscription(url: URL?, recordingId: UUID) async -> Result<String, Error> {
         guard let url = url else {
-            print("Audio file not found for recording \(recordingId)")
+            print("Audio file not found for recording Hola \(recordingId)")
             return .failure(TranscriptionError.audioFileNotFound)
         }
         
