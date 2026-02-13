@@ -53,7 +53,12 @@ final class AudioRecorderManager {
         
         // Create and start recorder
         audioRecorder = try AVAudioRecorder(url: audioURL, settings: settings)
-        audioRecorder?.record()
+        audioRecorder?.prepareToRecord()
+        let started = audioRecorder?.record() ?? false
+        
+        guard started else {
+            throw RecordingError.recordingFailed
+        }
         
         isRecording = true
         currentRecordingURL = audioURL

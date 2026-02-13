@@ -71,7 +71,6 @@ final class Recording {
         return documentsPath?.appendingPathComponent(audioFileName)
     }
     
-    /// Start async transcription for this recording
     @MainActor
     func startTranscription(modelContext: ModelContext) {
         guard transcriptionStatus == .pending else { return }

@@ -45,3 +45,6 @@ ContentView
 
 - `RecordingError`: Microphone permission, file system, recording failures
 - `TranscriptionError`: Speech permission, recognizer availability, transcription failures
+
+
+Your task is to help me learn and do this project. Search documentation always to get the most up to date information and dont write anything on my behalf, tell me your suggestions in code snippets instead and why. If you think its a learning moment give me hints not repsonses so i can figure it out myself. If anything your a tool for retrieving documentation and guiding me

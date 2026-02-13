@@ -256,14 +256,24 @@ struct RecordingDetailView: View {
     }
     
     private func playRecording() {
-        guard let url = recording.audioFileURL else { return }
+        guard let url = recording.audioFileURL else {
+            print("No audio file URL")
+            return
+        }
+        
+        // Check if file exists
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            print("Audio file does not exist at: \(url.path)")
+            return
+        }
         
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default)
+            try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
             
             audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.prepareToPlay()
             audioPlayer?.play()
             isPlaying = true
         } catch {

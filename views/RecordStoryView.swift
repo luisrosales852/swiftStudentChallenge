@@ -152,7 +152,6 @@ struct RecordStoryView: View {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 28))
                                         .foregroundColor(.white)
-                                    
                                     Text("Save Story")
                                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white)
@@ -206,7 +205,9 @@ struct RecordStoryView: View {
                 
                 // Start timer for recording duration
                 timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                    recordingTime += 1
+                    MainActor.assumeIsolated{
+                        recordingTime += 1
+                    }
                 }
             } catch {
                 errorMessage = error.localizedDescription

@@ -12,9 +12,7 @@ import Speech
 actor SpeechTranscriber {
     static let shared = SpeechTranscriber()
     
-    private init() {
-        
-    }
+    private init() {}
     
     /// Request speech recognition permission
     func requestPermission() async -> Bool {
@@ -44,8 +42,7 @@ actor SpeechTranscriber {
         // Create recognition request
         let request = SFSpeechURLRecognitionRequest(url: url)
         request.shouldReportPartialResults = false
-        
-        // Perform transcription
+    
         return try await withCheckedThrowingContinuation { continuation in
             var hasResumed = false
             
@@ -58,7 +55,13 @@ actor SpeechTranscriber {
                     return
                 }
                 
-                if let result = result, result.isFinal {
+                guard let result = result else {
+                    hasResumed = true
+                    continuation.resume(throwing: TranscriptionError.noResult)
+                    return
+                }
+                
+                if result.isFinal {
                     hasResumed = true
                     continuation.resume(returning: result.bestTranscription.formattedString)
                 }
