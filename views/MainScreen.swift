@@ -18,36 +18,15 @@ struct MainScreen: View {
     
     var body: some View {
         ZStack {
-            // Modern gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.05, green: 0.05, blue: 0.15),
-                    Color(red: 0.1, green: 0.05, blue: 0.2),
-                    Color(red: 0.15, green: 0.1, blue: 0.25)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            // Ambient light effects
-            Circle()
-                .fill(Color.blue.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: -100, y: -200)
-            
-            Circle()
-                .fill(Color.purple.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: 100, y: 200)
+            // Clean white background
+            Color.white
+                .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                // Header with glass effect
+                // Header
                 Text("Memory Trace")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .padding(.top, 20)
                 
                 // Main action buttons with glass container
@@ -72,7 +51,7 @@ struct MainScreen: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Recent Memories")
                         .font(.system(size: 24, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                     
@@ -81,15 +60,15 @@ struct MainScreen: View {
                         VStack(spacing: 16) {
                             Image(systemName: "waveform.circle")
                                 .font(.system(size: 50))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(.black.opacity(0.4))
                             
                             Text("No recordings yet")
                                 .font(.system(size: 18, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(.black.opacity(0.6))
                             
                             Text("Tap \"Record Story\" to create your first memory")
                                 .font(.system(size: 14, design: .rounded))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(.black.opacity(0.4))
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
@@ -155,17 +134,8 @@ struct NavigationButton: View {
                     .foregroundColor(.white.opacity(0.8))
             }
             .padding(20)
-            .background(
-                ZStack {
-                    // Subtle color tint behind the glass
-                    color.opacity(0.2)
-                    
-                    // Glass effect creates the modern liquid glass appearance
-                    Color.clear
-                }
-            )
-            .glassEffect(.regular.tint(color).interactive(), in: .rect(cornerRadius: 20))
         }
+        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
     }
 }
 
@@ -181,22 +151,22 @@ struct RecordingRow: View {
                 
                 Text(recording.title)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                 
                 Spacer()
                 
                 Text(recording.formattedDate)
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.black.opacity(0.6))
             }
             
             HStack {
                 Image(systemName: "waveform")
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.5))
                 
                 Text(recording.formattedDuration)
                     .font(.system(size: 15, design: .rounded))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(.black.opacity(0.7))
                 
                 Spacer()
                 
@@ -213,26 +183,11 @@ struct RecordingRow: View {
             if recording.transcriptionStatus == .completed && !recording.transcript.isEmpty {
                 Text(recording.transcript)
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.5))
                     .lineLimit(2)
             }
         }
         .padding(16)
-        .background(
-            ZStack {
-                // Subtle gradient for depth
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.white.opacity(0.08),
-                        Color.white.opacity(0.04)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                
-                Color.clear
-            }
-        )
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
     
