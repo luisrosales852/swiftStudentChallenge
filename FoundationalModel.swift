@@ -16,7 +16,7 @@ struct GeneratedTitle {
     var summary : String
 }
 
-enum titleGenerationError: Error, LocalizedError {
+enum TitleGenerationError: Error, LocalizedError {
     case modelUnavailable(reason: String)
     case emptyTranscript
     case generationFailed(underlying: Error)
@@ -44,31 +44,76 @@ actor TitleGenerator{
         SystemLanguageModel.default.isAvailable
     }
     
-    func generateTitle(from transcript: String) async throws -> String{
+    func generateTitle(from transcript: String) async throws -> String {
         let trimmed = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            throw titleGenerationError.emptyTranscript
+            throw TitleGenerationError.emptyTranscript
         }
         
-        let session = LanguageModelSession(instructions: """
-            You are a helpful  asistant that creates short, descriptive titles. You MUST respond in English regardless of the input language. Generate a concise title (3-8 words) that captures the main topic. Do not use question marks
-            """)
-        let prompt = "Create a short English title for this recording:\n\n\(trimmed)"
+        // First try: Structured generation (preferred - more reliable output)
+        do {
+            return try await generateWithStructuredOutput(transcript: trimmed)
+        } catch TitleGenerationError.guardrailTriggered {
+            // Second try: Permissive mode with plain string (handles sensitive content)
+            print("Guardrail triggered, trying permissive mode...")
+            return try await generateWithPermissiveMode(transcript: trimmed)
+        }
+    }
+    
+    /// Structured generation - preferred method, but guardrails apply
+    private func generateWithStructuredOutput(transcript: String) async throws -> String {
+        let session = LanguageModelSession(
+            instructions: """
+                You are a helpful assistant that creates short, descriptive titles.
+                You MUST respond in English regardless of the input language.
+                Generate a concise title (3-8 words) that captures the main topic.
+                Do not use quotation marks.
+                """
+        )
+        
+        let prompt = "Create a short English title for this recording:\n\n\(transcript)"
+        
         do {
             let response = try await session.respond(
                 to: prompt,
                 generating: GeneratedTitle.self
             )
             return response.content.summary
-            
         } catch let error as LanguageModelSession.GenerationError {
             switch error {
             case .guardrailViolation:
-                throw titleGenerationError.guardrailTriggered
+                throw TitleGenerationError.guardrailTriggered
             default:
-                throw titleGenerationError.generationFailed(underlying: error)
-                
+                throw TitleGenerationError.generationFailed(underlying: error)
             }
+        }
+    }
+    
+    /// Permissive mode - allows sensitive content, returns plain string
+    private func generateWithPermissiveMode(transcript: String) async throws -> String {
+        // Use permissive guardrails to handle sensitive transcripts
+        let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+        
+        let session = LanguageModelSession(
+            model: model,
+            instructions: """
+                You are a helpful assistant that creates short, descriptive titles.
+                You MUST respond in English regardless of the input language.
+                Generate ONLY a concise title (3-8 words). No explanations, no quotes.
+                """
+        )
+        
+        let prompt = "Create a short English title for this recording:\n\n\(transcript)"
+        
+        do {
+            let response = try await session.respond(to: prompt)
+            // Clean up the response (remove quotes, trim whitespace)
+            let title = response.content
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+            return title.isEmpty ? "Voice Recording" : title
+        } catch {
+            throw TitleGenerationError.generationFailed(underlying: error)
         }
     }
     
