@@ -27,30 +27,9 @@ struct RecordStoryView: View {
     
     var body: some View {
         ZStack {
-            // Modern gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.05, green: 0.05, blue: 0.15),
-                    Color(red: 0.1, green: 0.05, blue: 0.2),
-                    Color(red: 0.15, green: 0.1, blue: 0.25)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            // Ambient light effects
-            Circle()
-                .fill(Color.blue.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: -100, y: -200)
-            
-            Circle()
-                .fill(Color.red.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: 100, y: 200)
+            // Clean white background
+            Color.white
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
   
@@ -62,7 +41,7 @@ struct RecordStoryView: View {
                         // Recording status message
                         Text("Recording your story...")
                             .font(.system(size: 20, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.black.opacity(0.7))
                         
                         // Sound waves visualization
                         SoundWaveView()
@@ -71,10 +50,10 @@ struct RecordStoryView: View {
                         // Time elapsed
                         Text(formatTime(recordingTime))
                             .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(.vertical, 10)
                         
-                        // 4. Stop recording button
+                        // Stop recording button
                         Button(action: toggleRecording) {
                             HStack(spacing: 15) {
                                 Image(systemName: "stop.circle.fill")
@@ -87,75 +66,66 @@ struct RecordStoryView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(20)
-                            .background(
-                                ZStack {
-                                    Color.red.opacity(0.3)
-                                    Color.clear
-                                }
-                            )
-                            .glassEffect(.regular.tint(.red).interactive(), in: .rect(cornerRadius: 20))
                         }
+                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                         
                     } else {
-                        HStack(spacing: 12){
+                        HStack(spacing: 12) {
                             Button {
                                 languageChoice = "en-US"
                             } label: {
-                                HStack(spacing: 8){
+                                HStack(spacing: 8) {
                                     Text("🇺🇸")
                                     Text("English")
                                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                                        
-                                }.foregroundColor(.white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(languageChoice == "en-US" ? Color.white.opacity(0.3): Color.clear).clipShape(Capsule())
-                                
+                                }
+                                .foregroundColor(languageChoice == "en-US" ? .white : .black)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
                             }
                             .glassEffect(
                                 languageChoice == "en-US"
-                                ? .regular.tint(.black).interactive()
+                                    ? .regular.tint(.black).interactive()
                                     : .regular.interactive(),
                                 in: .capsule
-                            );
-                            Button{
+                            )
+                            
+                            Button {
                                 languageChoice = "es-ES"
                             } label: {
-                                HStack{
+                                HStack(spacing: 8) {
                                     Text("🇪🇸")
-                                    Text("Spanish").font(.system(size: 16, weight: .medium, design: .rounded))
-                                }.foregroundColor(.white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(languageChoice == "es-ES" ? Color.white.opacity(0.3): Color.clear).clipShape(Capsule())
-                            }.glassEffect(languageChoice == "es-ES"
-                                          ? .regular.tint(.black).interactive()
-                                              : .regular.interactive(),
-                                          in: .capsule)
-                        }.padding(.top, 20)
+                                    Text("Spanish")
+                                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                                }
+                                .foregroundColor(languageChoice == "es-ES" ? .white : .black)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                            }
+                            .glassEffect(
+                                languageChoice == "es-ES"
+                                    ? .regular.tint(.black).interactive()
+                                    : .regular.interactive(),
+                                in: .capsule
+                            )
+                        }
+                        .padding(.top, 20)
                         Spacer()
-                        // Pulsing microphone icon (when not recording)
+                        // Microphone icon
                         ZStack {
-                            
                             Image(systemName: "mic.circle.fill")
                                 .font(.system(size: 120))
                                 .foregroundColor(.white)
                         }
                         .padding(30)
-                        .background(
-                            ZStack {
-                                Color.white.opacity(0.05)
-                                Color.clear
-                            }
-                        )
-                        .glassEffect(.regular.interactive(), in: .circle)
+                        .glassEffect(.regular.tint(.black).interactive(), in: .circle)
                         
                         // Instructions
                         Text("Tap to record your story")
                             .font(.system(size: 22, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.black.opacity(0.7))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
@@ -180,14 +150,8 @@ struct RecordStoryView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(20)
-                            .background(
-                                ZStack {
-                                    Color.blue.opacity(0.3)
-                                    Color.clear
-                                }
-                            )
-                            .glassEffect(.regular.tint(.blue).interactive(), in: .rect(cornerRadius: 20))
                         }
+                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
                         
                         // Save button (only shown when has recorded)
                         if recordingTime > 0 {
@@ -196,20 +160,15 @@ struct RecordStoryView: View {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 28))
                                         .foregroundColor(.white)
+                                    
                                     Text("Save Story")
                                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(20)
-                                .background(
-                                    ZStack {
-                                        Color.green.opacity(0.3)
-                                        Color.clear
-                                    }
-                                )
-                                .glassEffect(.regular.tint(.green).interactive(), in: .rect(cornerRadius: 20))
                             }
+                            .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
                         }
                     }
                     .padding(.horizontal, 20)
@@ -220,9 +179,6 @@ struct RecordStoryView: View {
         .navigationTitle("Record Story")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color.clear, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         #endif
         .alert("Recording Error", isPresented: $showingError) {
             Button("OK", role: .cancel) {}
