@@ -93,15 +93,19 @@ final class Recording {
         let locale = Locale(identifier: languageIdentifier)
         let url = audioFileURL
         let recordingId = id
+        let currentTitle = title
         
         Task {
             let result = await Self.performTranscription(url: url, recordingId: recordingId, locale: locale)
+            
             
             // Update model on main actor
             switch result {
             case .success(let text):
                 self.transcript = text
                 self.transcriptionStatus = .completed
+                let generatedTitle = await TitleGenerator.shared.generateTitleOrFallback(from: text, fallback: currentTitle)
+                self.title = generatedTitle
             case .failure(let error):
                 self.transcriptionStatus = .failed
                 self.transcript = "Transcription failed: \(error.localizedDescription)"
