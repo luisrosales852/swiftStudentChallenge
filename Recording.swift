@@ -27,6 +27,7 @@ enum TranscriptionStatus: String, Codable {
 @Model
 final class Recording {
     var id: UUID
+    var languageIdentifier: String
     var title: String
     var date: Date
     var duration: TimeInterval
@@ -34,7 +35,7 @@ final class Recording {
     var audioFileName: String
     var transcriptionStatusRaw: String
     
-    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String) {
+    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String, languageIdentifier: String = "en-US") {
         self.id = UUID()
         self.title = title
         self.date = Date()
@@ -42,6 +43,7 @@ final class Recording {
         self.transcript = transcript
         self.audioFileName = audioFileName
         self.transcriptionStatusRaw = TranscriptionStatus.pending.rawValue
+        self.languageIdentifier = languageIdentifier
     }
     
     var transcriptionStatus: TranscriptionStatus {
@@ -65,12 +67,22 @@ final class Recording {
         return String(format: "%02d:%02d", minutes, seconds)
     }
     
+    var languageFlag: String {
+        switch languageIdentifier {
+        case "es-ES":
+            return "🇪🇸"
+        case "en-US":
+            return "🇺🇸"
+        default:
+            return "🇺🇸"
+        }
+    }
+    
     /// Returns the full URL to the audio file in the documents directory
     var audioFileURL: URL? {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         return documentsPath?.appendingPathComponent(audioFileName)
     }
-    
     @MainActor
     func startTranscription(modelContext: ModelContext) {
         guard transcriptionStatus == .pending else { return }
@@ -78,11 +90,12 @@ final class Recording {
         transcriptionStatus = .inProgress
         
         // Capture values needed for background work
+        let locale = Locale(identifier: languageIdentifier)
         let url = audioFileURL
         let recordingId = id
         
         Task {
-            let result = await Self.performTranscription(url: url, recordingId: recordingId)
+            let result = await Self.performTranscription(url: url, recordingId: recordingId, locale: locale)
             
             // Update model on main actor
             switch result {
@@ -98,14 +111,14 @@ final class Recording {
     }
     
     /// Performs transcription off the main actor
-    private static nonisolated func performTranscription(url: URL?, recordingId: UUID) async -> Result<String, Error> {
+    private static nonisolated func performTranscription(url: URL?, recordingId: UUID, locale: Locale) async -> Result<String, Error> {
         guard let url = url else {
             print("Audio file not found for recording Hola \(recordingId)")
             return .failure(TranscriptionError.audioFileNotFound)
         }
         
         do {
-            let transcribedText = try await SpeechTranscriber.shared.transcribe(audioFileURL: url)
+            let transcribedText = try await SpeechTranscriber.shared.transcribe(audioFileURL: url, locale: locale)
             print("Transcription completed for recording \(recordingId)")
             return .success(transcribedText)
         } catch {

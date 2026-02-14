@@ -8,11 +8,14 @@
 import SwiftUI
 import SwiftData
 
+
 struct RecordStoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
     private var audioRecorder = AudioRecorderManager.shared
+    
+    
     
     @State private var isRecording = false
     @State private var recordingTime: TimeInterval = 0
@@ -20,6 +23,7 @@ struct RecordStoryView: View {
     @State private var currentRecordingFileName: String?
     @State private var showingError = false
     @State private var errorMessage = ""
+    @State private var languageChoice: String = "en-US"
     
     var body: some View {
         ZStack {
@@ -49,11 +53,12 @@ struct RecordStoryView: View {
                 .offset(x: 100, y: 200)
             
             VStack(spacing: 0) {
-                Spacer()
-                
+  
                 // Recording indicator
                 VStack(spacing: 20) {
+                    
                     if isRecording {
+                        Spacer()
                         // Recording status message
                         Text("Recording your story...")
                             .font(.system(size: 20, weight: .medium, design: .rounded))
@@ -94,8 +99,46 @@ struct RecordStoryView: View {
                         .padding(.top, 10)
                         
                     } else {
+                        HStack(spacing: 12){
+                            Button {
+                                languageChoice = "en-US"
+                            } label: {
+                                HStack(spacing: 8){
+                                    Text("🇺🇸")
+                                    Text("English")
+                                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                                        
+                                }.foregroundColor(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 10)
+                                    .background(languageChoice == "en-US" ? Color.white.opacity(0.3): Color.clear).clipShape(Capsule())
+                                
+                            }
+                            .glassEffect(
+                                languageChoice == "en-US"
+                                ? .regular.tint(.black).interactive()
+                                    : .regular.interactive(),
+                                in: .capsule
+                            );
+                            Button{
+                                languageChoice = "es-ES"
+                            } label: {
+                                HStack{
+                                    Text("🇪🇸")
+                                    Text("Spanish").font(.system(size: 16, weight: .medium, design: .rounded))
+                                }.foregroundColor(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 10)
+                                    .background(languageChoice == "es-ES" ? Color.white.opacity(0.3): Color.clear).clipShape(Capsule())
+                            }.glassEffect(languageChoice == "es-ES"
+                                          ? .regular.tint(.black).interactive()
+                                              : .regular.interactive(),
+                                          in: .capsule)
+                        }.padding(.top, 20)
+                        Spacer()
                         // Pulsing microphone icon (when not recording)
                         ZStack {
+                            
                             Image(systemName: "mic.circle.fill")
                                 .font(.system(size: 120))
                                 .foregroundColor(.white)
@@ -116,6 +159,7 @@ struct RecordStoryView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
+                    Spacer()
                 }
                 
                 Spacer()
@@ -241,7 +285,8 @@ struct RecordStoryView: View {
             title: title,
             duration: recordingTime,
             transcript: "",
-            audioFileName: fileName
+            audioFileName: fileName,
+            languageIdentifier: languageChoice,
         )
         
         modelContext.insert(recording)

@@ -176,6 +176,9 @@ struct RecordingRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
+                Text(recording.languageFlag)
+                    .font(.system(size: 20))
+                
                 Text(recording.title)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)

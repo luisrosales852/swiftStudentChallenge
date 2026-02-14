@@ -23,7 +23,7 @@ actor SpeechTranscriber {
         }
     }
     
-    func transcribe(audioFileURL url: URL) async throws -> String {
+    func transcribe(audioFileURL url: URL, locale: Locale) async throws -> String {
         // Check permission
         let authorized = await requestPermission()
         guard authorized else {
@@ -31,7 +31,7 @@ actor SpeechTranscriber {
         }
         
         // Create speech recognizer
-        guard let recognizer = SFSpeechRecognizer() else {
+        guard let recognizer = SFSpeechRecognizer(locale: locale) else {
             throw TranscriptionError.recognizerUnavailable
         }
         
