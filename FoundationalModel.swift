@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FoundationalModel.swift
 //  Swift Student Challenge Real
 //
 //  Created by Luis on 14/02/26.
@@ -9,36 +9,15 @@ import SwiftUI
 import FoundationModels
 
 
-
-@Generable(description: "A summary title for the transcript keeping in mind its a memory")
+@Generable(description: "A title for a memory recording")
 struct GeneratedTitle {
     @Guide(description: "A short memorable title between 3-8 words")
-    var summary : String
+    var title: String
 }
 
-enum TitleGenerationError: Error, LocalizedError {
-    case modelUnavailable(reason: String)
-    case emptyTranscript
-    case generationFailed(underlying: Error)
-    case guardrailTriggered
-    
-    var errorDescription: String? {
-        switch self {
-        case .modelUnavailable(let reason):
-            return "Apple Intelligence unavailable: \(reason)"
-        case .emptyTranscript:
-            return "Cannot generate title from empty transcript"
-        case .generationFailed(let error):
-            return "Title generation failed: \(error.localizedDescription)"
-        case .guardrailTriggered:
-            return "Content could not be processed"
-        }
-    }
-}
-
-actor TitleGenerator{
+actor TitleGenerator {
     static let shared = TitleGenerator()
-    private init(){}
+    private init() {}
     
     var isAvailable: Bool {
         SystemLanguageModel.default.isAvailable
@@ -46,74 +25,27 @@ actor TitleGenerator{
     
     func generateTitle(from transcript: String) async throws -> String {
         let trimmed = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            throw TitleGenerationError.emptyTranscript
-        }
+        guard !trimmed.isEmpty else { return "Voice Recording" }
         
-        // First try: Structured generation (preferred - more reliable output)
+        let instructions = """
+            You create short, descriptive titles for family memory recordings.
+            Respond in English regardless of input language.
+            No quotation marks.
+            """
+        
+        let prompt = "Create a title (3-8 words) for this recording:\n\n\(trimmed)"
+        
+        // Try structured generation first
         do {
-            return try await generateWithStructuredOutput(transcript: trimmed)
-        } catch TitleGenerationError.guardrailTriggered {
-            // Second try: Permissive mode with plain string (handles sensitive content)
-            print("Guardrail triggered, trying permissive mode...")
-            return try await generateWithPermissiveMode(transcript: trimmed)
-        }
-    }
-    
-    /// Structured generation - preferred method, but guardrails apply
-    private func generateWithStructuredOutput(transcript: String) async throws -> String {
-        let session = LanguageModelSession(
-            instructions: """
-                You are a helpful assistant that creates short, descriptive titles.
-                You MUST respond in English regardless of the input language.
-                Generate a concise title (3-8 words) that captures the main topic.
-                Do not use quotation marks.
-                """
-        )
-        
-        let prompt = "Create a short English title for this recording:\n\n\(transcript)"
-        
-        do {
-            let response = try await session.respond(
-                to: prompt,
-                generating: GeneratedTitle.self
-            )
-            return response.content.summary
-        } catch let error as LanguageModelSession.GenerationError {
-            switch error {
-            case .guardrailViolation:
-                throw TitleGenerationError.guardrailTriggered
-            default:
-                throw TitleGenerationError.generationFailed(underlying: error)
-            }
-        }
-    }
-    
-    /// Permissive mode - allows sensitive content, returns plain string
-    private func generateWithPermissiveMode(transcript: String) async throws -> String {
-        // Use permissive guardrails to handle sensitive transcripts
-        let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
-        
-        let session = LanguageModelSession(
-            model: model,
-            instructions: """
-                You are a helpful assistant that creates short, descriptive titles.
-                You MUST respond in English regardless of the input language.
-                Generate ONLY a concise title (3-8 words). No explanations, no quotes.
-                """
-        )
-        
-        let prompt = "Create a short English title for this recording:\n\n\(transcript)"
-        
-        do {
+            let session = LanguageModelSession(instructions: instructions)
+            let response = try await session.respond(to: prompt, generating: GeneratedTitle.self)
+            return response.content.title
+        } catch LanguageModelSession.GenerationError.guardrailViolation {
+            // Fallback to permissive mode for sensitive content
+            let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+            let session = LanguageModelSession(model: model, instructions: instructions)
             let response = try await session.respond(to: prompt)
-            // Clean up the response (remove quotes, trim whitespace)
-            let title = response.content
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
-            return title.isEmpty ? "Voice Recording" : title
-        } catch {
-            throw TitleGenerationError.generationFailed(underlying: error)
+            return response.content.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
     
@@ -125,23 +57,54 @@ actor TitleGenerator{
             return fallback
         }
     }
+}
+
+@Generable(description: "A summary of a memory recording")
+struct GeneratedSummary {
+    @Guide(description: "A 1-2 sentence summary of the memory")
+    var summary: String
+}
+
+actor SummaryGenerator {
+    static let shared = SummaryGenerator()
+    private init() {}
     
-    private func unavailabilityReason() -> String {
-        switch SystemLanguageModel.default.availability {
-        case .available:
-            return "Available"
-        case .unavailable(.deviceNotEligible):
-            return "Device does not support Apple Intelligence"
-        case .unavailable(.appleIntelligenceNotEnabled):
-            return "Apple Intelligence not enabled"
-        case .unavailable(.modelNotReady):
-            return "Model still downloading"
-        @unknown default:
-            return "Unknown"
+    var isAvailable: Bool {
+        SystemLanguageModel.default.isAvailable
+    }
+    
+    func generateSummary(from transcript: String) async throws -> String {
+        let trimmed = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+        
+        let instructions = """
+            You create brief summaries of family memory recordings.
+            Respond in English regardless of input language.
+            Focus on who, what, and why this memory matters.
+            """
+        
+        let prompt = "Summarize this memory in 1-2 sentences:\n\n\(trimmed)"
+        
+        // Try structured generation first
+        do {
+            let session = LanguageModelSession(instructions: instructions)
+            let response = try await session.respond(to: prompt, generating: GeneratedSummary.self)
+            return response.content.summary
+        } catch LanguageModelSession.GenerationError.guardrailViolation {
+            // Fallback to permissive mode for sensitive content
+            let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+            let session = LanguageModelSession(model: model, instructions: instructions)
+            let response = try await session.respond(to: prompt)
+            return response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+    
+    func generateSummaryOrFallback(from transcript: String, fallback: String) async -> String {
+        do {
+            return try await generateSummary(from: transcript)
+        } catch {
+            print("Summary generation failed: \(error)")
+            return fallback
         }
     }
 }
-
-
-
-

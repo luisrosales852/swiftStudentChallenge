@@ -27,6 +27,7 @@ enum TranscriptionStatus: String, Codable {
 @Model
 final class Recording {
     var id: UUID
+    var summary: String
     var languageIdentifier: String
     var title: String
     var date: Date
@@ -35,10 +36,11 @@ final class Recording {
     var audioFileName: String
     var transcriptionStatusRaw: String
     
-    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String, languageIdentifier: String = "en-US") {
+    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String, languageIdentifier: String = "en-US", summary: String = "") {
         self.id = UUID()
         self.title = title
         self.date = Date()
+        self.summary = summary
         self.duration = duration
         self.transcript = transcript
         self.audioFileName = audioFileName
@@ -106,6 +108,8 @@ final class Recording {
                 self.transcriptionStatus = .completed
                 let generatedTitle = await TitleGenerator.shared.generateTitleOrFallback(from: text, fallback: currentTitle)
                 self.title = generatedTitle
+                let generatedSummary = await SummaryGenerator.shared.generateSummaryOrFallback(from: text, fallback: "")
+                self.summary = generatedSummary
             case .failure(let error):
                 self.transcriptionStatus = .failed
                 self.transcript = "Transcription failed: \(error.localizedDescription)"
