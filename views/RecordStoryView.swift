@@ -12,6 +12,7 @@ import SwiftData
 struct RecordStoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.popToRoot) private var popToRoot
     
     private var audioRecorder = AudioRecorderManager.shared
     
@@ -260,10 +261,10 @@ struct RecordStoryView: View {
             return
         }
         
-        // Reset and go back
+        // Reset and go back to main screen
         recordingTime = 0
         currentRecordingFileName = nil
-        dismiss()
+        popToRoot()
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
