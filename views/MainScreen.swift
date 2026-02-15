@@ -10,7 +10,7 @@ import SwiftData
 
 struct MainScreen: View {
     @Namespace private var glassNamespace
-    @State private var navigateToRecordStory = false
+    @State private var navigateToChat = false
     @Environment(\.modelContext) private var modelContext
     
     // Query saved recordings from SwiftData, sorted by date (newest first)
@@ -33,7 +33,7 @@ struct MainScreen: View {
                 GlassEffectContainer(spacing: 30) {
                     VStack(spacing: 20) {
                         NavigationButton(title: "Record Story", icon: "mic.circle.fill", color: .blue) {
-                            navigateToRecordStory = true
+                            navigateToChat = true
                         }
                         
                         NavigationButton(title: "My Memories", icon: "photo.on.rectangle.angled", color: .purple) {
@@ -93,8 +93,8 @@ struct MainScreen: View {
                 Spacer()
             }
         }
-        .navigationDestination(isPresented: $navigateToRecordStory) {
-            RecordStoryView()
+        .navigationDestination(isPresented: $navigateToChat) {
+            PromptChatView()
         }
         .navigationDestination(for: Recording.self) { recording in
             RecordingDetailView(recording: recording)
