@@ -108,3 +108,122 @@ actor SummaryGenerator {
         }
     }
 }
+
+/// A single message in the chat
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    let role: Role
+    var text: String
+    
+    enum Role {
+        case user
+        case assistant
+    }
+}
+
+/// Manages a conversational session to help users discover what to record
+@MainActor
+@Observable
+class PromptChat {
+    private var session: LanguageModelSession?
+    private(set) var messages: [ChatMessage] = []
+    private(set) var isGenerating = false
+    private(set) var currentStreamingText = ""
+    
+    var isAvailable: Bool {
+        SystemLanguageModel.default.isAvailable
+    }
+    
+    func prewarm(existingRecordings: [Recording]) {
+        let instructions = buildInstructions(from: existingRecordings)
+        session = LanguageModelSession(instructions: instructions)
+        session?.prewarm()
+    }
+    
+    /// Start the conversation with an initial greeting
+    func startConversation(existingRecordings: [Recording]) async {
+        // Create session if not prewarmed
+        if session == nil {
+            let instructions = buildInstructions(from: existingRecordings)
+            session = LanguageModelSession(instructions: instructions)
+        }
+        
+        // Send initial prompt to get the conversation started
+        await sendMessage("Hello! I'd like to record a memory.")
+    }
+    
+    /// Send a user message and stream the response
+    func sendMessage(_ text: String) async {
+        guard let session = session else { return }
+        
+        // Add user message
+        let userMessage = ChatMessage(role: .user, text: text)
+        messages.append(userMessage)
+        
+        // Prepare assistant message placeholder
+        let assistantMessage = ChatMessage(role: .assistant, text: "")
+        messages.append(assistantMessage)
+        let assistantIndex = messages.count - 1
+        
+        isGenerating = true
+        currentStreamingText = ""
+        
+        do {
+            // Stream the response token by token
+            let stream = session.streamResponse(to: text)
+            
+            for try await snapshot in stream {
+                currentStreamingText = snapshot.content
+                messages[assistantIndex].text = snapshot.content
+            }
+        } catch {
+            messages[assistantIndex].text = "Sorry, I couldn't respond. Please try again."
+            print("Chat error: \(error)")
+        }
+        
+        isGenerating = false
+        currentStreamingText = ""
+    }
+    
+    /// Reset the conversation
+    func reset() {
+        session = nil
+        messages = []
+        isGenerating = false
+        currentStreamingText = ""
+    }
+    
+    /// Build instructions that include context about existing recordings
+    private func buildInstructions(from recordings: [Recording]) -> String {
+        var context = ""
+        
+        if !recordings.isEmpty {
+            let recordingSummaries = recordings.prefix(10).map { recording in
+                "- \(recording.title): \(recording.summary)"
+            }.joined(separator: "\n")
+            
+            context = """
+            
+            The user has already recorded these memories:
+            \(recordingSummaries)
+            
+            Use this context to suggest topics they haven't explored yet, or to go deeper into themes they've already touched on.
+            """
+        }
+        
+        return """
+            You are a warm, empathetic guide helping someone preserve their family memories.
+            Your role is to help them discover what story they want to record next.
+            
+            Guidelines:
+            - Be conversational and encouraging, like a friendly interviewer
+            - Ask follow-up questions to help them find a specific memory
+            - Suggest categories: Childhood, Family, Immigration, Career, Recipes, Traditions
+            - When they seem ready, confirm the topic and encourage them to start recording
+            - Keep responses concise (2-3 sentences max)
+            - Respond in English
+            \(context)
+            """
+    }
+}
+

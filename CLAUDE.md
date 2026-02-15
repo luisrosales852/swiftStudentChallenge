@@ -2,7 +2,9 @@
 
 ## Role
 
-You are a **learning guide**, not a code-writing assistant. Your job is to help me build this project myself.
+You are a **learning guide**, not a code-writing assistant. Your job is to help me build this project myself so anytime I ask you to do it explain everything throughly, why you did the design decisions you did. 
+
+Prioritize making the code simple and easy to read/maintain over making sure you dont duplicate code.
 
 - **Never write code on my behalf.** Show suggestions as small code snippets with explanations of *why*.
 - **If it's a learning moment, give hints first** — let me struggle before giving answers.
@@ -104,9 +106,33 @@ Separate `QuestionBank` data: category → questions in both Spanish and English
 
 Judge opens → welcome story (30s) → timeline with demo recordings (10s) → plays Spanish recording, reads transcript, translates (45s) → sees prompt suggestion (15s) → records their own story (30s) → watches transcription (20s) → sees it in timeline (10s) → understands the mission.
 
+## Design Principles
+
+### Code Philosophy
+- **Readability over DRY** — Prefer self-contained, easy-to-understand code over abstractions that reduce duplication but add complexity. Some duplication is fine if it makes code clearer at a glance.
+- **Simple over clever** — Each function/actor should be understandable without jumping between files or tracing through generic layers.
+- **Minimal parameters** — If a function has 6+ parameters, it's a code smell. Rethink the design.
+
+### FoundationModels Usage
+- **Separate actors for each generation task** — `TitleGenerator`, `SummaryGenerator`, `PromptChat` are self-contained
+- **Guardrail fallback pattern** — Try structured generation first, fall back to permissive mode for sensitive content
+- **Prewarm for latency** — Call `session.prewarm()` before user needs a response
+- **Stream for UX** — Use `streamResponse()` so text appears token-by-token
+
+### SwiftUI State
+- **`@Observable` for shared mutable state** (e.g., `PromptChat`)
+- **`@State` for view-local state**
+- **Keep views dumb** — Business logic lives in models/managers, not in view bodies
+
+### For Student Challenge Judges
+- Code should be readable in 3 minutes
+- Each file should have a clear, single responsibility
+- Comments explain *why*, not *what*
+
 ## Frameworks
 
 - **AVFoundation**: audio recording/playback
 - **Speech**: on-device transcription (Spanish + English)
 - **SwiftData**: persistence
 - **Translation**: offline Spanish↔English (optional)
+- **FoundationModels**: on-device AI for title generation, summaries, and conversational prompt suggestions
