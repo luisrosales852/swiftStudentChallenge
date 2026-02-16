@@ -73,6 +73,7 @@ struct PromptChatView: View {
                 HStack(spacing: 12) {
                     TextField("Type a message...", text: $userInput)
                         .textFieldStyle(.plain)
+                        .foregroundColor(.black)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                         .background {

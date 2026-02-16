@@ -19,44 +19,23 @@ struct RecordingDetailView: View {
     
     var body: some View {
         ZStack {
-            // Modern gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.05, green: 0.05, blue: 0.15),
-                    Color(red: 0.1, green: 0.05, blue: 0.2),
-                    Color(red: 0.15, green: 0.1, blue: 0.25)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            // Ambient light effects
-            Circle()
-                .fill(Color.purple.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: -100, y: -200)
-            
-            Circle()
-                .fill(Color.blue.opacity(0.15))
-                .blur(radius: 100)
-                .frame(width: 300, height: 300)
-                .offset(x: 100, y: 300)
+            // Clean white background
+            Color.white
+                .ignoresSafeArea()
             
             VStack(spacing: 24) {
                 // Recording info header
                 VStack(spacing: 8) {
                     Text(recording.title)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                     
                     HStack(spacing: 16) {
                         Label(recording.formattedDuration, systemImage: "waveform")
                         Label(recording.formattedDate, systemImage: "calendar")
                     }
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.black.opacity(0.6))
                 }
                 .padding(.top, 20)
                 
@@ -72,14 +51,8 @@ struct RecordingDetailView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(16)
-                    .background(
-                        ZStack {
-                            Color.blue.opacity(0.3)
-                            Color.clear
-                        }
-                    )
-                    .glassEffect(.regular.tint(.blue).interactive(), in: .rect(cornerRadius: 16))
                 }
+                .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 16))
                 .padding(.horizontal, 20)
                 
                 // Transcript section
@@ -87,7 +60,7 @@ struct RecordingDetailView: View {
                     HStack {
                         Text("Transcript")
                             .font(.system(size: 20, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                         
                         Spacer()
                         
@@ -103,12 +76,6 @@ struct RecordingDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(maxHeight: .infinity)
-                    .background(
-                        ZStack {
-                            Color.white.opacity(0.05)
-                            Color.clear
-                        }
-                    )
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 20))
                     .padding(.horizontal, 20)
                 }
@@ -119,9 +86,6 @@ struct RecordingDetailView: View {
         .navigationTitle("Recording")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(Color.clear, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         #endif
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -154,15 +118,14 @@ struct RecordingDetailView: View {
             HStack(spacing: 6) {
                 ProgressView()
                     .scaleEffect(0.8)
-                    .tint(.white)
+                    .tint(.black)
                 Text("Transcribing...")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
             }
-            .foregroundColor(.white.opacity(0.7))
+            .foregroundColor(.black.opacity(0.7))
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.orange.opacity(0.3))
-            .glassEffect(.regular.tint(.orange), in: .capsule)
+            .glassEffect(.regular.interactive(), in: .capsule)
             
         case .completed:
             HStack(spacing: 4) {
@@ -171,11 +134,10 @@ struct RecordingDetailView: View {
                 Text("Ready")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
             }
-            .foregroundColor(.white.opacity(0.9))
+            .foregroundColor(.white)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.green.opacity(0.3))
-            .glassEffect(.regular.tint(.green), in: .capsule)
+            .glassEffect(.regular.tint(.black), in: .capsule)
             
         case .failed:
             HStack(spacing: 4) {
@@ -184,10 +146,9 @@ struct RecordingDetailView: View {
                 Text("Failed")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
             }
-            .foregroundColor(.white.opacity(0.9))
+            .foregroundColor(.white)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.red.opacity(0.3))
             .glassEffect(.regular.tint(.red), in: .capsule)
         }
     }
@@ -199,15 +160,15 @@ struct RecordingDetailView: View {
             VStack(spacing: 16) {
                 ProgressView()
                     .scaleEffect(1.5)
-                    .tint(.white)
+                    .tint(.black)
                 
                 Text("Transcribing your recording...")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.black.opacity(0.7))
                 
                 Text("This may take a moment depending on the length of your recording.")
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.black.opacity(0.5))
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
@@ -217,12 +178,12 @@ struct RecordingDetailView: View {
             if recording.transcript.isEmpty {
                 Text("No speech detected in this recording.")
                     .font(.system(size: 16, design: .rounded))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.6))
                     .italic()
             } else {
                 Text(recording.transcript)
                     .font(.system(size: 18, weight: .regular, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .lineSpacing(6)
             }
             
@@ -234,11 +195,11 @@ struct RecordingDetailView: View {
                 
                 Text("Transcription Failed")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                 
                 Text(recording.transcript)
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.6))
                     .multilineTextAlignment(.center)
                 
                 Button(action: retryTranscription) {
@@ -250,9 +211,8 @@ struct RecordingDetailView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(Color.blue.opacity(0.3))
-                    .glassEffect(.regular.tint(.blue).interactive(), in: .capsule)
                 }
+                .glassEffect(.regular.tint(.black).interactive(), in: .capsule)
                 .padding(.top, 8)
             }
             .frame(maxWidth: .infinity)
