@@ -14,7 +14,6 @@ struct PromptChatView: View {
     
     @State private var chat = PromptChat()
     @State private var userInput = ""
-    @State private var showRecordingView = false
     
     var body: some View {
         ZStack {
@@ -54,9 +53,7 @@ struct PromptChatView: View {
                 
                 // Ready to record button
                 if !chat.isGenerating {
-                    Button {
-                        showRecordingView = true
-                    } label: {
+                    NavigationLink(value: AppRoute.record) {
                         HStack(spacing: 12) {
                             Image(systemName: "mic.circle.fill")
                                 .font(.system(size: 24))
@@ -109,8 +106,18 @@ struct PromptChatView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .navigationDestination(isPresented: $showRecordingView) {
-            RecordStoryView()
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                }
+            }
         }
         .onAppear {
             // Only start conversation if it's a fresh chat (no messages yet)

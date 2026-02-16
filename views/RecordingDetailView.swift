@@ -10,6 +10,7 @@ import SwiftData
 import AVFoundation
 
 struct RecordingDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var recording: Recording
     
@@ -122,6 +123,19 @@ struct RecordingDetailView: View {
         .toolbarBackground(Color.clear, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         #endif
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                }
+            }
+        }
         .onAppear {
             // Retry transcription if it was pending
             if recording.transcriptionStatus == .pending {

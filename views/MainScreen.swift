@@ -10,7 +10,6 @@ import SwiftData
 
 struct MainScreen: View {
     @Namespace private var glassNamespace
-    @State private var navigateToChat = false
     @Environment(\.modelContext) private var modelContext
     
     // Query saved recordings from SwiftData, sorted by date (newest first)
@@ -32,9 +31,10 @@ struct MainScreen: View {
                 // Main action buttons with glass container
                 GlassEffectContainer(spacing: 30) {
                     VStack(spacing: 20) {
-                        NavigationButton(title: "Record Story", icon: "mic.circle.fill", color: .blue) {
-                            navigateToChat = true
+                        NavigationLink(value: AppRoute.chat) {
+                            NavigationButtonLabel(title: "Record Story", icon: "mic.circle.fill")
                         }
+                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
                         
                         NavigationButton(title: "My Memories", icon: "photo.on.rectangle.angled", color: .purple) {
                             // Navigate to memories
@@ -93,12 +93,7 @@ struct MainScreen: View {
                 Spacer()
             }
         }
-        .navigationDestination(isPresented: $navigateToChat) {
-            PromptChatView()
-        }
-        .navigationDestination(for: Recording.self) { recording in
-            RecordingDetailView(recording: recording)
-        }
+
     }
     
     private func deleteRecording(_ recording: Recording) {
@@ -117,25 +112,34 @@ struct NavigationButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 15) {
-                Image(systemName: icon)
-                    .font(.system(size: 28))
-                    .foregroundColor(.white)
-                    .frame(width: 50)
-                
-                Text(title)
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .padding(20)
+            NavigationButtonLabel(title: title, icon: icon)
         }
         .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
+    }
+}
+
+struct NavigationButtonLabel: View {
+    let title: String
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 28))
+                .foregroundColor(.white)
+                .frame(width: 50)
+            
+            Text(title)
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding(20)
     }
 }
 

@@ -1,6 +1,11 @@
 
-
 import SwiftUI
+
+// Navigation routes for the app
+enum AppRoute: Hashable {
+    case chat
+    case record
+}
 
 // Environment key for popping to root
 struct PopToRootKey: EnvironmentKey {
@@ -32,6 +37,17 @@ struct ContentView: View {
                 // Show main app with NavigationStack
                 NavigationStack(path: $navigationPath) {
                     MainScreen()
+                        .navigationDestination(for: AppRoute.self) { route in
+                            switch route {
+                            case .chat:
+                                PromptChatView()
+                            case .record:
+                                RecordStoryView()
+                            }
+                        }
+                        .navigationDestination(for: Recording.self) { recording in
+                            RecordingDetailView(recording: recording)
+                        }
                 }
                 .environment(\.popToRoot) {
                     navigationPath = NavigationPath()
