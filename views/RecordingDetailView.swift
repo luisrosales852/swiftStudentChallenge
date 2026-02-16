@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import AVFoundation
+import Translation
 
 struct RecordingDetailView: View {
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +17,7 @@ struct RecordingDetailView: View {
     
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isPlaying = false
+    @State private var showTranslation = false
     
     var body: some View {
         ZStack {
@@ -78,6 +80,7 @@ struct RecordingDetailView: View {
                     .frame(maxHeight: .infinity)
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 20))
                     .padding(.horizontal, 20)
+                    .translationPresentation(isPresented: $showTranslation, text: recording.transcript)
                 }
                 
                 Spacer()
@@ -181,10 +184,24 @@ struct RecordingDetailView: View {
                     .foregroundColor(.black.opacity(0.6))
                     .italic()
             } else {
-                Text(recording.transcript)
-                    .font(.system(size: 18, weight: .regular, design: .rounded))
-                    .foregroundColor(.black)
-                    .lineSpacing(6)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(recording.transcript)
+                        .font(.system(size: 18, weight: .regular, design: .rounded))
+                        .foregroundColor(.black)
+                        .lineSpacing(6)
+                    
+                    Button(action: { showTranslation = true }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "translate")
+                            Text("Translate")
+                        }
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.tint(.black).interactive(), in: .capsule)
+                }
             }
             
         case .failed:
