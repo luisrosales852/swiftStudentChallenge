@@ -68,6 +68,28 @@ struct MainScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                     
+                    // Search bar
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        
+                        TextField("Search", text: $searchText)
+                            .font(.system(size: 17))
+                        
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding(.horizontal, 20)
+                    
                     if savedRecordings.isEmpty {
                         // Empty state
                         VStack(spacing: 16) {
@@ -120,12 +142,11 @@ struct MainScreen: View {
                             .padding(.horizontal, 20)
                         }
                     }
-                }.searchable(text: $searchText, prompt: "Search memories")
+                }
                 
                 Spacer()
             }
         }
-
     }
     
     private func deleteRecording(_ recording: Recording) {
