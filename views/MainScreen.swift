@@ -11,9 +11,22 @@ import SwiftData
 struct MainScreen: View {
     @Namespace private var glassNamespace
     @Environment(\.modelContext) private var modelContext
+    @State private var searchText = ""
     
     // Query saved recordings from SwiftData, sorted by date (newest first)
     @Query(sort: \Recording.date, order: .reverse) private var savedRecordings: [Recording]
+    
+    private var filteredRecordings: [Recording] {
+        if searchText.isEmpty {
+            return savedRecordings
+        }
+        let lowercased = searchText.lowercased()
+        return savedRecordings.filter {recording in
+            recording.title.lowercased().contains(lowercased) ||
+            recording.transcript.lowercased().contains(lowercased) ||
+            recording.summary.lowercased().contains(lowercased)
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -73,10 +86,29 @@ struct MainScreen: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 40)
-                    } else {
+                    }
+                    else if filteredRecordings.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 50))
+                                .foregroundColor(.black.opacity(0.4))
+                            
+                            Text("No memories found")
+                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .foregroundColor(.black.opacity(0.6))
+                            
+                            Text("No results for \"\(searchText)\"")
+                                .font(.system(size: 14, design: .rounded))
+                                .foregroundColor(.black.opacity(0.4))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
+                    }
+                     else{
                         ScrollView {
                             VStack(spacing: 12) {
-                                ForEach(savedRecordings) { recording in
+                                ForEach(filteredRecordings) { recording in
                                     NavigationLink(value: recording) {
                                         RecordingRow(recording: recording, onDelete: {
                                             deleteRecording(recording)
@@ -88,7 +120,7 @@ struct MainScreen: View {
                             .padding(.horizontal, 20)
                         }
                     }
-                }
+                }.searchable(text: $searchText, prompt: "Search memories")
                 
                 Spacer()
             }
