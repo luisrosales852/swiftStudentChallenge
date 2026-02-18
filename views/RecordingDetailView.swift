@@ -10,6 +10,13 @@ import SwiftData
 import AVFoundation
 import Translation
 
+private class PlayBackDelegate: NSObject, AVAudioPlayerDelegate{
+    var onFinish: () -> Void = {}
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onFinish()
+    }
+}
+
 struct RecordingDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -18,6 +25,7 @@ struct RecordingDetailView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isPlaying = false
     @State private var showTranslation = false
+    @State private var playbackDelegate = PlayBackDelegate()
     
     var body: some View {
         ZStack {
@@ -26,7 +34,6 @@ struct RecordingDetailView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
-                // Recording info header
                 VStack(spacing: 8) {
                     Text(recording.title)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -264,6 +271,8 @@ struct RecordingDetailView: View {
             try session.setActive(true)
             
             audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.delegate = playbackDelegate
+            playbackDelegate.onFinish = {self.isPlaying = false}
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
             isPlaying = true
@@ -277,7 +286,10 @@ struct RecordingDetailView: View {
         recording.transcript = ""
         recording.startTranscription(modelContext: modelContext)
     }
+    
 }
+
+
 
 #Preview {
     NavigationStack {
