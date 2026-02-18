@@ -10,10 +10,38 @@ import SwiftData
 import AVFoundation
 import Translation
 
-private class PlayBackDelegate: NSObject, AVAudioPlayerDelegate{
-    var onFinish: () -> Void = {}
+@Observable
+final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
+    private var player: AVAudioPlayer?
+    var isPlaying = false
+    
+    func play(url: URL) {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback)
+            try session.setActive(true)
+            
+            player = try AVAudioPlayer(contentsOf: url)
+            player?.delegate = self
+            player?.play()
+            isPlaying = true
+        } catch {
+            print("Playback failed: \(error)")
+        }
+    }
+    
+    func pause() {
+        player?.pause()
+        isPlaying = false
+    }
+    
+    func stop() {
+        player?.stop()
+        isPlaying = false
+    }
+    
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        onFinish()
+        isPlaying = false
     }
 }
 
@@ -22,10 +50,8 @@ struct RecordingDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var recording: Recording
     
-    @State private var audioPlayer: AVAudioPlayer?
-    @State private var isPlaying = false
+    @State private var playerManager = AudioPlayerManager()
     @State private var showTranslation = false
-    @State private var playbackDelegate = PlayBackDelegate()
     
     var body: some View {
         ZStack {
@@ -51,10 +77,10 @@ struct RecordingDetailView: View {
                 // Play button
                 Button(action: togglePlayback) {
                     HStack(spacing: 12) {
-                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        Image(systemName: playerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                             .font(.system(size: 28))
                         
-                        Text(isPlaying ? "Pause" : "Play Recording")
+                        Text(playerManager.isPlaying ? "Pause" : "Play Recording")
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
                     }
                     .foregroundColor(.white)
@@ -117,7 +143,7 @@ struct RecordingDetailView: View {
             }
         }
         .onDisappear {
-            audioPlayer?.stop()
+            playerManager.stop()
         }
     }
     
@@ -245,39 +271,14 @@ struct RecordingDetailView: View {
     }
     
     private func togglePlayback() {
-        if isPlaying {
-            audioPlayer?.pause()
-            isPlaying = false
+        if playerManager.isPlaying {
+            playerManager.pause()
         } else {
-            playRecording()
-        }
-    }
-    
-    private func playRecording() {
-        guard let url = recording.audioFileURL else {
-            print("No audio file URL")
-            return
-        }
-        
-        // Check if file exists
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            print("Audio file does not exist at: \(url.path)")
-            return
-        }
-        
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
-            try session.setActive(true)
-            
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = playbackDelegate
-            playbackDelegate.onFinish = {self.isPlaying = false}
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-            isPlaying = true
-        } catch {
-            print("Failed to play recording: \(error)")
+            guard let url = recording.audioFileURL else {
+                print("No audio file URL")
+                return
+            }
+            playerManager.play(url: url)
         }
     }
     
