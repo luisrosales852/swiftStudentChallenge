@@ -22,6 +22,7 @@ extension EnvironmentValues {
 struct ContentView: View {
     @State private var splashComplete = false
     @State private var navigationPath = NavigationPath()
+    @State private var showWelcomeSheet = true
     
     var body: some View {
         Group {
@@ -36,7 +37,7 @@ struct ContentView: View {
             } else {
                 // Show main app with NavigationStack
                 NavigationStack(path: $navigationPath) {
-                    MainScreen()
+                    MainScreen(showWelcomeSheet: $showWelcomeSheet)
                         .navigationDestination(for: AppRoute.self) { route in
                             switch route {
                             case .chat:
