@@ -138,32 +138,27 @@ struct RecordingDetailView: View {
                                     get: { isDraggingSlider ? sliderValue : playerManager.currentTime },
                                     set: { newValue in
                                         sliderValue = newValue
-                                        if isDraggingSlider {
-                                            playerManager.seek(to: newValue)
-                                        }
                                     }
                                 ),
-                                in: 0...max(playerManager.duration, 0.01)
-                            )
-                            .tint(.white)
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { _ in
-                                        if !isDraggingSlider {
-                                            isDraggingSlider = true
-                                            wasPlayingBeforeDrag = playerManager.isPlaying
-                                            sliderValue = playerManager.currentTime
-                                            playerManager.pause()
-                                        }
-                                    }
-                                    .onEnded { _ in
+                                in: 0...max(playerManager.duration, 0.01),
+                                onEditingChanged: { editing in
+                                    if editing {
+                                        // Started dragging
+                                        wasPlayingBeforeDrag = playerManager.isPlaying
+                                        sliderValue = playerManager.currentTime
+                                        isDraggingSlider = true
+                                        playerManager.pause()
+                                    } else {
+                                        // Finished dragging
                                         playerManager.seek(to: sliderValue)
                                         isDraggingSlider = false
-                                        if wasPlayingBeforeDrag{
+                                        if wasPlayingBeforeDrag {
                                             playerManager.startPlayback()
                                         }
                                     }
+                                }
                             )
+                            .tint(.white)
                             
                             // Time labels
                             HStack {

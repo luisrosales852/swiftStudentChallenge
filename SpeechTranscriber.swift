@@ -39,7 +39,6 @@ actor SpeechTranscriber {
             throw TranscriptionError.recognizerUnavailable
         }
         
-        // Create recognition request
         let request = SFSpeechURLRecognitionRequest(url: url)
         request.shouldReportPartialResults = false
     
