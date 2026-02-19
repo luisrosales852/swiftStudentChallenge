@@ -173,11 +173,16 @@ class PromptChat {
             let stream = session.streamResponse(to: text)
             
             for try await snapshot in stream {
+                // Guard against reset() being called during streaming
+                guard assistantIndex < messages.count else { break }
                 currentStreamingText = snapshot.content
                 messages[assistantIndex].text = snapshot.content
             }
         } catch {
-            messages[assistantIndex].text = "Sorry, I couldn't respond. Please try again."
+            // Guard against reset() being called during streaming
+            if assistantIndex < messages.count {
+                messages[assistantIndex].text = "Sorry, I couldn't respond. Please try again."
+            }
             print("Chat error: \(error)")
         }
         
