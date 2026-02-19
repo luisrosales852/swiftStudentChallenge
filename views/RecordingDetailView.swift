@@ -13,9 +13,20 @@ import Translation
 @Observable
 final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
     private var player: AVAudioPlayer?
+    private var timer: Timer?
+    private var currentURL: URL?
+    
     var isPlaying = false
+    var currentTime: TimeInterval = 0
+    var duration: TimeInterval = 0
     
     func play(url: URL) {
+        if let _ = player, currentURL == url {
+            startPlayback()
+            return
+        }
+        
+        // Otherwise load a new file
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback)
@@ -23,25 +34,58 @@ final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
             
             player = try AVAudioPlayer(contentsOf: url)
             player?.delegate = self
-            player?.play()
-            isPlaying = true
+            currentURL = url
+            duration = player?.duration ?? 0
+            currentTime = 0
+            
+            startPlayback()
         } catch {
             print("Playback failed: \(error)")
         }
     }
     
+    func startPlayback() {
+        player?.play()
+        isPlaying = true
+        startTimer()
+    }
+    
     func pause() {
         player?.pause()
         isPlaying = false
+        stopTimer()
     }
     
     func stop() {
         player?.stop()
         isPlaying = false
+        currentTime = 0
+        stopTimer()
+    }
+    
+    func seek(to time: TimeInterval) {
+        let clampedTime = max(0, min(time, duration))
+        player?.currentTime = clampedTime
+        currentTime = clampedTime
+    }
+        
+    private func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            guard let self, let player = self.player else { return }
+            self.currentTime = player.currentTime
+        }
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         isPlaying = false
+        currentTime = 0
+        stopTimer()
     }
 }
 
@@ -52,6 +96,9 @@ struct RecordingDetailView: View {
     
     @State private var playerManager = AudioPlayerManager()
     @State private var showTranslation = false
+    @State private var isDraggingSlider = false
+    @State private var sliderValue: TimeInterval = 0
+    @State private var wasPlayingBeforeDrag = false
     
     var body: some View {
         ZStack {
@@ -74,17 +121,64 @@ struct RecordingDetailView: View {
                 }
                 .padding(.top, 20)
                 
-                // Play button
-                Button(action: togglePlayback) {
-                    HStack(spacing: 12) {
-                        Image(systemName: playerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 28))
+                // Audio player timeline
+                VStack(spacing: 12) {
+                    HStack(spacing: 16) {
+                        // Play/Pause button
+                        Button(action: togglePlayback) {
+                            Image(systemName: playerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 44))
+                                .foregroundColor(.white)
+                        }
                         
-                        Text(playerManager.isPlaying ? "Pause" : "Play Recording")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        // Timeline slider and time labels
+                        VStack(spacing: 4) {
+                            Slider(
+                                value: Binding(
+                                    get: { isDraggingSlider ? sliderValue : playerManager.currentTime },
+                                    set: { newValue in
+                                        sliderValue = newValue
+                                        if isDraggingSlider {
+                                            playerManager.seek(to: newValue)
+                                        }
+                                    }
+                                ),
+                                in: 0...max(playerManager.duration, 0.01)
+                            )
+                            .tint(.white)
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isDraggingSlider {
+                                            isDraggingSlider = true
+                                            wasPlayingBeforeDrag = playerManager.isPlaying
+                                            sliderValue = playerManager.currentTime
+                                            playerManager.pause()
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        playerManager.seek(to: sliderValue)
+                                        isDraggingSlider = false
+                                        if wasPlayingBeforeDrag{
+                                            playerManager.startPlayback()
+                                        }
+                                    }
+                            )
+                            
+                            // Time labels
+                            HStack {
+                                Text(formatTime(isDraggingSlider ? sliderValue : playerManager.currentTime))
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.8))
+                                
+                                Spacer()
+                                
+                                Text(formatTime(playerManager.duration))
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
+                        }
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
                     .padding(16)
                 }
                 .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 16))
@@ -288,6 +382,11 @@ struct RecordingDetailView: View {
         recording.startTranscription(modelContext: modelContext)
     }
     
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
 }
 
 
