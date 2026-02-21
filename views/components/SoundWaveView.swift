@@ -28,8 +28,8 @@ enum Constants {
 
 
 struct SoundWaveView: View {
-    // 1. AudioWaveformMonitor shared instance
-    private var monitor = AudioWaveFormMonitor.shared
+    // Each view gets its own monitor instance (not a singleton)
+    @State private var monitor = AudioWaveFormMonitor()
     // Gradients for the chart
     private let chartGradient = LinearGradient(
         gradient: Gradient(colors: [.blue, .purple, .red]),
@@ -64,6 +64,9 @@ struct SoundWaveView: View {
         .task {
             await monitor.startMonitoring()
         }
+        .onDisappear {
+            monitor.stopMonitoring()
+        }
         
         
     }
@@ -71,9 +74,7 @@ struct SoundWaveView: View {
     @MainActor
     @Observable
     final class AudioWaveFormMonitor {
-        static let shared = AudioWaveFormMonitor()
-        
-        //Provide access to the microphone stream
+        // Provide access to the microphone stream
         private var audioEngine = AVAudioEngine()
         
         var fftMagnitudes = [Float](repeating: 0, count: Constants.sampleAmount)
@@ -86,7 +87,11 @@ struct SoundWaveView: View {
         private let bufferSize = 8192
         private var fftSetup: OpaquePointer?
         var isMonitoring = false
-        private init(){}
+        
+        // Continuation to allow cancelling the stream
+        private var streamContinuation: AsyncStream<[Float]>.Continuation?
+        
+        init() {}
         
         func startMonitoring() async {
             // Request microphone permission first
@@ -101,14 +106,24 @@ struct SoundWaveView: View {
             fftSetup = vDSP_DFT_zop_CreateSetup(nil, UInt(self.bufferSize), .FORWARD)
             
             let audioStream = AsyncStream<[Float]> { continuation in
+                // Store continuation so we can finish it from stopMonitoring()
+                self.streamContinuation = continuation
+                
+                // Clean up when stream is cancelled or finished
+                continuation.onTermination = { @Sendable _ in
+                    Task { @MainActor in
+                        self.cleanupAudioEngine()
+                    }
+                }
+                
                 inputNode.installTap(onBus: 0, bufferSize: UInt32(bufferSize), format: inputFormat) { @Sendable buffer, _ in
                     let channelData = buffer.floatChannelData?[0]
                     let frameCount = Int(buffer.frameLength)
                     
-                    // 2. Convert it into a Float array
+                    // Convert it into a Float array
                     let floatData = Array(UnsafeBufferPointer(start: channelData, count: frameCount))
                     
-                    // 3. Yield into the stream
+                    // Yield into the stream
                     continuation.yield(floatData)
                 }
             }
@@ -131,6 +146,13 @@ struct SoundWaveView: View {
         }
         
         func stopMonitoring() {
+            // Finish the stream, which triggers onTermination cleanup
+            streamContinuation?.finish()
+            streamContinuation = nil
+            isMonitoring = false
+        }
+        
+        private func cleanupAudioEngine() {
             audioEngine.stop()
             audioEngine.inputNode.removeTap(onBus: 0)
             fftMagnitudes = [Float](repeating: 0, count: Constants.sampleAmount)
@@ -139,8 +161,6 @@ struct SoundWaveView: View {
                 vDSP_DFT_DestroySetup(setup)
                 fftSetup = nil
             }
-            isMonitoring = false
-            
         }
         
         func performFFT (data: [Float]) async -> [Float] {

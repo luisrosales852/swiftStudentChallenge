@@ -226,6 +226,15 @@ struct RecordingDetailView: View {
             }
         }
         .onAppear {
+            // Debug: Check if audio file exists
+            if let url = recording.audioFileURL {
+                let exists = FileManager.default.fileExists(atPath: url.path)
+                print("DEBUG - Audio file: \(url.lastPathComponent), exists: \(exists)")
+                print("DEBUG - Full path: \(url.path)")
+            } else {
+                print("DEBUG - No audio URL for recording: \(recording.title)")
+            }
+            
             // Retry transcription if it was pending
             if recording.transcriptionStatus == .pending {
                 recording.startTranscription(modelContext: modelContext)
