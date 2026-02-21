@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import AVFoundation
 import Translation
+import PhotosUI
 
 @Observable
 final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
@@ -99,6 +100,10 @@ struct RecordingDetailView: View {
     @State private var isDraggingSlider = false
     @State private var sliderValue: TimeInterval = 0
     @State private var wasPlayingBeforeDrag = false
+    
+    // Photo picker state
+    @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var isLoadingPhotos = false
     
     var body: some View {
         ZStack {
@@ -205,6 +210,33 @@ struct RecordingDetailView: View {
                     .translationPresentation(isPresented: $showTranslation, text: recording.transcript)
                 }
                 
+                // Photos section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Photos")
+                            .font(.system(size: 20, weight: .semibold, design: .rounded))
+                            .foregroundColor(.black)
+                        
+                        Spacer()
+                        PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Add")
+                            }
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                        }
+                        .glassEffect(.regular.tint(.black).interactive(), in: .capsule)
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // Photos grid
+                    photosGrid
+                        .padding(.horizontal, 20)
+                }
+                
                 Spacer()
             }
         }
@@ -242,6 +274,11 @@ struct RecordingDetailView: View {
         }
         .onDisappear {
             playerManager.stop()
+        }
+        .onChange(of: selectedPhotoItems) {
+            Task {
+                await loadSelectedPhotos()
+            }
         }
     }
     
@@ -390,6 +427,91 @@ struct RecordingDetailView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    @ViewBuilder
+    private var photosGrid: some View {
+        if recording.photoFileNames.isEmpty && !isLoadingPhotos {
+            Text("No photos attached")
+                .font(.system(size: 14, design: .rounded))
+                .foregroundColor(.black.opacity(0.5))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    // Show loading indicator if photos are being processed
+                    if isLoadingPhotos {
+                        ProgressView()
+                            .frame(width: 80, height: 80)
+                    }
+                    
+                    // Show existing photos
+                    ForEach(Array(recording.photoFileURLs.enumerated()), id: \.offset) { index, url in
+                        PhotoThumbnail(
+                            url: url,
+                            onDelete: { recording.removePhoto(at: index) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+    /// Load selected photos, convert to JPEG, and save
+    private func loadSelectedPhotos() async {
+        guard !selectedPhotoItems.isEmpty else { return }
+        
+        isLoadingPhotos = true
+        
+        for item in selectedPhotoItems {
+            // Load the image data from PhotosPickerItem
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let uiImage = UIImage(data: data),
+               let jpegData = uiImage.jpegData(compressionQuality: 0.8) {
+                _ = recording.addPhoto(jpegData)
+            }
+        }
+        
+        // Clear selection after processing
+        selectedPhotoItems.removeAll()
+        isLoadingPhotos = false
+    }
+}
+
+struct PhotoThumbnail: View {
+    let url: URL
+    let onDelete: () -> Void
+    
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            // Load image from file URL
+            if let uiImage = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                // Placeholder if image fails to load
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 80, height: 80)
+                    .overlay {
+                        Image(systemName: "photo")
+                            .foregroundColor(.gray)
+                    }
+            }
+            
+            // Delete button
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.white)
+                    .background(Circle().fill(.black.opacity(0.6)))
+            }
+            .offset(x: 6, y: -6)
+        }
     }
 }
 

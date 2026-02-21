@@ -65,6 +65,7 @@ ContentView
 - Extract subviews early — no massive `body` blocks
 - Prefer enums with associated values over stringly-typed logic
 - Handle errors with `do/catch` — no force unwraps
+- **Use explicit parameter names for closures** — avoid trailing closure syntax for readability (e.g., `MyView(url: url, onDelete: { ... })` instead of `MyView(url: url) { ... }`)
 
 ## Data Model (SwiftData)
 
