@@ -34,9 +34,10 @@ final class Recording {
     var duration: TimeInterval
     var transcript: String
     var audioFileName: String
+    var photoFileNames: [String]
     var transcriptionStatusRaw: String
     
-    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String, languageIdentifier: String = "en-US", summary: String = "") {
+    init(title: String, duration: TimeInterval, transcript: String = "", audioFileName: String, languageIdentifier: String = "en-US", summary: String = "", photoFileNames: [String] = []) {
         self.id = UUID()
         self.title = title
         self.date = Date()
@@ -46,11 +47,20 @@ final class Recording {
         self.audioFileName = audioFileName
         self.transcriptionStatusRaw = TranscriptionStatus.pending.rawValue
         self.languageIdentifier = languageIdentifier
+        self.photoFileNames = photoFileNames
     }
     
     var transcriptionStatus: TranscriptionStatus {
         get { TranscriptionStatus(rawValue: transcriptionStatusRaw) ?? .pending }
         set { transcriptionStatusRaw = newValue.rawValue }
+    }
+    
+    var photoFileURLs: [URL]{
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return []
+        }
+        
+        return photoFileNames.map {documentsPath.appendingPathComponent($0)}
     }
     
     var isTranscribing: Bool {
@@ -84,6 +94,56 @@ final class Recording {
     var audioFileURL: URL? {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         return documentsPath?.appendingPathComponent(audioFileName)
+    }
+    
+    static func saveImage(_ data: Data) -> String? {
+        let fileName = "photo_\(UUID().uuidString).jpg"
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let fileURL = documentsPath.appendingPathComponent(fileName)
+        
+        do {
+            try data.write(to: fileURL)
+            return fileName
+        } catch {
+            print("Failed to save image: \(error)")
+            return nil
+        }
+    }
+    
+    /// Delete an image file from disk only
+    private static func deleteImageFile(fileName: String) {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+        let fileURL = documentsPath.appendingPathComponent(fileName)
+        try? FileManager.default.removeItem(at: fileURL)
+    }
+    
+    /// Save image data and add to this recording's photoFileNames
+    /// - Parameter data: The image data (JPEG) to save
+    /// - Returns: true if successful, false otherwise
+    func addPhoto(_ data: Data) -> Bool {
+        guard let fileName = Self.saveImage(data) else { return false }
+        photoFileNames.append(fileName)
+        return true
+    }
+    
+    /// Remove a photo at index: deletes file from disk AND removes from photoFileNames array
+    func removePhoto(at index: Int) {
+        guard index >= 0 && index < photoFileNames.count else { return }
+        let fileName = photoFileNames[index]
+        Self.deleteImageFile(fileName: fileName)
+        photoFileNames.remove(at: index)
+    }
+    
+    /// Delete all photos associated with this recording (call before deleting the recording)
+    func deleteAllPhotos() {
+        for fileName in photoFileNames {
+            Self.deleteImageFile(fileName: fileName)
+        }
+        photoFileNames.removeAll()
     }
     @MainActor
     func startTranscription(modelContext: ModelContext) {
