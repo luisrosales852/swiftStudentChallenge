@@ -83,7 +83,7 @@ struct MainScreen: View {
                 
                 // Main action buttons
                 VStack(spacing: 14) {
-                    NavigationLink(value: AppRoute.chat) {
+                    NavigationLink(value: AppRoute.record) {
                         ActionCardLabel(
                             title: "Record Story",
                             subtitle: "Capture a new memory",
@@ -102,13 +102,14 @@ struct MainScreen: View {
                             // Navigate to memories
                         }
                         
-                        ActionCardSmall(
-                            title: "Reminders",
-                            icon: "bell.fill",
-                            accentColor: .warmBrown
-                        ) {
-                            // Navigate to reminders
+                        NavigationLink(value: AppRoute.chat) {
+                            ActionCardSmallLabel(
+                                title: "Chat",
+                                icon: "bubble.left.and.bubble.right.fill",
+                                accentColor: .warmBrown
+                            )
                         }
+                        .glassEffect(.regular.tint(Color.warmBrown.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -293,13 +294,46 @@ struct ActionCardSmall: View {
                 }
                 
                 Text(title)
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundColor(.warmBrown)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
         }
         .glassEffect(.regular.tint(accentColor.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
+    }
+}
+
+// Label version of ActionCardSmall for use inside NavigationLink
+struct ActionCardSmallLabel: View {
+    let title: String
+    let icon: String
+    let accentColor: Color
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [accentColor, accentColor.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 46, height: 46)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+            
+            Text(title)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundColor(.warmBrown)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
     }
 }
 
