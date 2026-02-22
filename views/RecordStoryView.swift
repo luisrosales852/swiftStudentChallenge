@@ -16,8 +16,6 @@ struct RecordStoryView: View {
     
     private var audioRecorder = AudioRecorderManager.shared
     
-    
-    
     @State private var isRecording = false
     @State private var recordingTime: TimeInterval = 0
     @State private var timer: Timer?
@@ -28,12 +26,29 @@ struct RecordStoryView: View {
     
     var body: some View {
         ZStack {
-            // Clean white background
-            Color.white
-                .ignoresSafeArea()
+            // Warm gradient background
+            LinearGradient(
+                colors: [
+                    Color.warmSand,
+                    Color.softAmber.opacity(0.6),
+                    Color.warmSand
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Subtle decorative shapes
+            GeometryReader { geo in
+                Circle()
+                    .fill(Color.softTerracotta.opacity(0.15))
+                    .frame(width: 300, height: 300)
+                    .blur(radius: 60)
+                    .offset(x: geo.size.width * 0.5, y: geo.size.height * 0.3)
+            }
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
-  
                 // Recording indicator
                 VStack(spacing: 20) {
                     
@@ -42,7 +57,7 @@ struct RecordStoryView: View {
                         // Recording status message
                         Text("Recording your story...")
                             .font(.system(size: 20, weight: .medium, design: .rounded))
-                            .foregroundColor(.black.opacity(0.7))
+                            .foregroundColor(.warmBrown.opacity(0.7))
                         
                         // Sound waves visualization
                         SoundWaveView()
@@ -51,84 +66,88 @@ struct RecordStoryView: View {
                         // Time elapsed
                         Text(formatTime(recordingTime))
                             .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .foregroundColor(.warmBrown)
                             .padding(.vertical, 10)
                         
                         // Stop recording button
                         Button(action: toggleRecording) {
                             HStack(spacing: 15) {
-                                Image(systemName: "stop.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(.white)
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 44, height: 44)
+                                    
+                                    Image(systemName: "stop.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white)
+                                }
                                 
                                 Text("Stop Recording")
-                                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .foregroundColor(.white)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(20)
+                            .padding(18)
                         }
-                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
+                        .glassEffect(.regular.tint(.deepTerracotta).interactive(), in: .rect(cornerRadius: 20))
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                         
                     } else {
+                        // Language selector
                         HStack(spacing: 12) {
-                            Button {
-                                languageChoice = "en-US"
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Text("🇺🇸")
-                                    Text("English")
-                                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                                }
-                                .foregroundColor(languageChoice == "en-US" ? .white : .black)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                            }
-                            .glassEffect(
-                                languageChoice == "en-US"
-                                    ? .regular.tint(.black).interactive()
-                                    : .regular.interactive(),
-                                in: .capsule
+                            LanguageButton(
+                                flag: "🇺🇸",
+                                language: "English",
+                                isSelected: languageChoice == "en-US",
+                                action: { languageChoice = "en-US" }
                             )
                             
-                            Button {
-                                languageChoice = "es-ES"
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Text("🇪🇸")
-                                    Text("Spanish")
-                                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                                }
-                                .foregroundColor(languageChoice == "es-ES" ? .white : .black)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                            }
-                            .glassEffect(
-                                languageChoice == "es-ES"
-                                    ? .regular.tint(.black).interactive()
-                                    : .regular.interactive(),
-                                in: .capsule
+                            LanguageButton(
+                                flag: "🇪🇸",
+                                language: "Spanish",
+                                isSelected: languageChoice == "es-ES",
+                                action: { languageChoice = "es-ES" }
                             )
                         }
                         .padding(.top, 20)
+                        
                         Spacer()
+                        
                         // Microphone icon
                         ZStack {
-                            Image(systemName: "mic.circle.fill")
-                                .font(.system(size: 120))
-                                .foregroundColor(.white)
+                            // Outer glow
+                            Circle()
+                                .fill(Color.softTerracotta.opacity(0.2))
+                                .frame(width: 200, height: 200)
+                                .blur(radius: 20)
+                            
+                            // Main button
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.softTerracotta, .deepTerracotta],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 140, height: 140)
+                                
+                                Image(systemName: "mic.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white)
+                            }
+                            .shadow(color: .softTerracotta.opacity(0.4), radius: 20, y: 10)
                         }
-                        .padding(30)
-                        .glassEffect(.regular.tint(.black).interactive(), in: .circle)
                         
                         // Instructions
                         Text("Tap to record your story")
-                            .font(.system(size: 22, weight: .medium, design: .rounded))
-                            .foregroundColor(.black.opacity(0.7))
+                            .font(.system(size: 20, weight: .medium, design: .rounded))
+                            .foregroundColor(.warmBrown.opacity(0.7))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
+                            .padding(.top, 20)
                     }
                     Spacer()
                 }
@@ -137,39 +156,51 @@ struct RecordStoryView: View {
                 
                 // Control buttons (only shown when NOT recording)
                 if !isRecording {
-                    VStack(spacing: 15) {
+                    VStack(spacing: 14) {
                         // Record button
                         Button(action: toggleRecording) {
                             HStack(spacing: 15) {
-                                Image(systemName: "mic.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(.white)
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 44, height: 44)
+                                    
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white)
+                                }
                                 
                                 Text("Start Recording")
-                                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .foregroundColor(.white)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(20)
+                            .padding(18)
                         }
-                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
+                        .glassEffect(.regular.tint(.softTerracotta).interactive(), in: .rect(cornerRadius: 20))
                         
                         // Save button (only shown when has recorded)
                         if recordingTime > 0 {
                             Button(action: saveRecording) {
                                 HStack(spacing: 15) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 28))
-                                        .foregroundColor(.white)
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.white.opacity(0.2))
+                                            .frame(width: 44, height: 44)
+                                        
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(.white)
+                                    }
                                     
                                     Text("Save Story")
-                                        .font(.system(size: 22, weight: .semibold, design: .rounded))
+                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(20)
+                                .padding(18)
                             }
-                            .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
+                            .glassEffect(.regular.tint(.deepTerracotta).interactive(), in: .rect(cornerRadius: 20))
                         }
                     }
                     .padding(.horizontal, 20)
@@ -191,6 +222,7 @@ struct RecordStoryView: View {
                         Image(systemName: "chevron.left")
                         Text("Back")
                     }
+                    .foregroundColor(.warmBrown)
                 }
             }
         }
@@ -284,6 +316,32 @@ struct RecordStoryView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
+
+struct LanguageButton: View {
+    let flag: String
+    let language: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Text(flag)
+                Text(language)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+            }
+            .foregroundColor(isSelected ? .white : .warmBrown)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+        }
+        .glassEffect(
+            isSelected
+                ? .regular.tint(.softTerracotta).interactive()
+                : .regular.tint(.warmBrown.opacity(0.1)).interactive(),
+            in: .capsule
+        )
     }
 }
 

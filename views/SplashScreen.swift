@@ -35,7 +35,7 @@ struct OnboardingPopup: View {
             HStack(spacing: 8) {
                 ForEach(0..<totalPages, id: \.self) { index in
                     Circle()
-                        .fill(index == currentPage ? Color.primary : Color.secondary.opacity(0.5))
+                        .fill(index == currentPage ? Color.softTerracotta : Color.warmBrown.opacity(0.3))
                         .frame(width: 8, height: 8)
                         .scaleEffect(index == currentPage ? 1.2 : 1.0)
                         .animation(.spring(duration: 0.3), value: currentPage)
@@ -56,11 +56,11 @@ struct OnboardingPopup: View {
                             Text("Back")
                         }
                         .font(.headline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.warmBrown)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                     }
-                    .glassEffect()
+                    .glassEffect(.regular.tint(.softTerracotta.opacity(0.2)).interactive(), in: .capsule)
                 } else {
                     Color.clear
                         .frame(width: 90, height: 40)
@@ -85,16 +85,24 @@ struct OnboardingPopup: View {
                         }
                     }
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
                 }
-                .glassEffect()
+                .glassEffect(.regular.tint(.softTerracotta).interactive(), in: .capsule)
             }
         }
         .padding(24)
         .frame(maxWidth: 400, maxHeight: 520)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .background(
+            LinearGradient(
+                colors: [Color.warmSand, Color.softAmber.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: .warmBrown.opacity(0.2), radius: 20, y: 10)
         .scaleEffect(appeared ? 1 : 0.8)
         .opacity(appeared ? 1 : 0)
         .onAppear {
@@ -114,18 +122,24 @@ struct AboutMePage: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: 120, height: 120)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.softTerracotta.opacity(0.5), lineWidth: 3)
+                )
 
             Spacer()
-                .frame(height: 20)
+                .frame(height: 10)
 
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 Text("Hi, I'm Luis")
                     .font(.title2.bold())
+                    .foregroundColor(.warmBrown)
                     .multilineTextAlignment(.center)
                 
-                Text("Im a 4th Semester CS student at @Tec de Monterrey in Monterrey Nuevo Leon, Part of the competitive robotics team @RoBorregos in the HRI team at Home competition and interested in Hackathons and Swift UI")
+                Text("I'm a 4th Semester CS student at Tec de Monterrey in Monterrey, Nuevo León. Part of the competitive robotics team RoBorregos in the HRI team, and passionate about Hackathons and SwiftUI.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }
@@ -137,18 +151,37 @@ struct AboutMePage: View {
 struct AboutAlzheimersPage: View {
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "brain.head.profile")
-                .font(.system(size: 60))
-                .foregroundStyle(.purple)
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.deepTerracotta.opacity(0.2), Color.softTerracotta.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 50))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.deepTerracotta, .softTerracotta],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
             
-            VStack(spacing: 8) {
-                Text("Understanding Alzheimer's (Brief Description)")
+            VStack(spacing: 10) {
+                Text("Understanding Alzheimer's")
                     .font(.title2.bold())
+                    .foregroundColor(.warmBrown)
                     .multilineTextAlignment(.center)
                 
-                Text("Alzheimer's disease affects over 55 million people worldwide. It gradually erases memories, making it harder for loved ones to recall their own life stories. By the time symptoms appear, years of precious memories may already be fading. It took my grandmother from my dads side 4 years ago and its now affecting my aunt. I used this app to capture her memories")
+                Text("Alzheimer's disease affects over 55 million people worldwide. It gradually erases memories, making it harder for loved ones to recall their own life stories. It took my grandmother 4 years ago and is now affecting my aunt. I used this app to capture her memories.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }
@@ -160,27 +193,47 @@ struct AboutAlzheimersPage: View {
 struct AboutAppPage: View {
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "waveform.circle.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.blue)
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.softTerracotta.opacity(0.2), Color.softAmber.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "waveform.circle.fill")
+                    .font(.system(size: 50))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.softTerracotta, .deepTerracotta],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
             
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 Text("Memory Trace")
                     .font(.title2.bold())
+                    .foregroundColor(.warmBrown)
                     .multilineTextAlignment(.center)
                 
-                Text("Memory Trace helps you capture the voices and stories of your loved ones before they fade. Record conversations, get instant transcriptions, and translate between Spanish and English—preserving memories across generations and languages.")
+                Text("Capture the voices and stories of your loved ones before they fade. Record conversations, get instant transcriptions, and translate between Spanish and English.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
             
             // Feature highlights
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 FeatureRow(icon: "mic.fill", text: "Record family stories")
                 FeatureRow(icon: "text.quote", text: "Automatic transcription")
                 FeatureRow(icon: "globe", text: "Spanish & English support")
             }
+            .padding(.top, 4)
         }
         .padding(.horizontal)
     }
@@ -194,23 +247,27 @@ struct FeatureRow: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundStyle(.blue)
+                .foregroundStyle(.softTerracotta)
                 .frame(width: 24)
             
             Text(text)
                 .font(.subheadline)
+                .foregroundColor(.warmBrown.opacity(0.8))
         }
     }
 }
 
 #Preview {
     ZStack {
-        Color.gray.opacity(0.3)
-            .ignoresSafeArea()
+        LinearGradient(
+            colors: [Color.warmSand, Color.softAmber.opacity(0.5)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
         
         OnboardingPopup {
             print("Onboarding complete")
         }
     }
 }
-
