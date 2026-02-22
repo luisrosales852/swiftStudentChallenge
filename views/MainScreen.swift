@@ -8,6 +8,16 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Color Theme
+extension Color {
+    // Warm earthy palette
+    static let warmSand = Color(red: 0.96, green: 0.93, blue: 0.88)
+    static let softTerracotta = Color(red: 0.87, green: 0.58, blue: 0.47)
+    static let deepTerracotta = Color(red: 0.76, green: 0.42, blue: 0.32)
+    static let warmBrown = Color(red: 0.45, green: 0.32, blue: 0.25)
+    static let softAmber = Color(red: 0.95, green: 0.85, blue: 0.70)
+}
+
 struct MainScreen: View {
     @Namespace private var glassNamespace
     @Environment(\.modelContext) private var modelContext
@@ -21,7 +31,7 @@ struct MainScreen: View {
             return savedRecordings
         }
         let lowercased = searchText.lowercased()
-        return savedRecordings.filter {recording in
+        return savedRecordings.filter { recording in
             recording.title.lowercased().contains(lowercased) ||
             recording.transcript.lowercased().contains(lowercased) ||
             recording.summary.lowercased().contains(lowercased)
@@ -30,64 +40,118 @@ struct MainScreen: View {
     
     var body: some View {
         ZStack {
-            // Clean white background
-            Color.white
-                .ignoresSafeArea()
+            // Warm gradient background
+            LinearGradient(
+                colors: [
+                    Color.warmSand,
+                    Color.softAmber.opacity(0.6),
+                    Color.warmSand
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                // Header
-                Text("Memory Trace")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                    .padding(.top, 20)
+            // Subtle decorative shapes
+            GeometryReader { geo in
+                Circle()
+                    .fill(Color.softTerracotta.opacity(0.15))
+                    .frame(width: 300, height: 300)
+                    .blur(radius: 60)
+                    .offset(x: geo.size.width * 0.6, y: -50)
                 
-                // Main action buttons with glass container
-                GlassEffectContainer(spacing: 30) {
-                    VStack(spacing: 20) {
-                        NavigationLink(value: AppRoute.chat) {
-                            NavigationButtonLabel(title: "Record Story", icon: "mic.circle.fill")
-                        }
-                        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
-                        
-                        NavigationButton(title: "My Memories", icon: "photo.on.rectangle.angled", color: .purple) {
+                Circle()
+                    .fill(Color.deepTerracotta.opacity(0.1))
+                    .frame(width: 250, height: 250)
+                    .blur(radius: 50)
+                    .offset(x: -50, y: geo.size.height * 0.7)
+            }
+            .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                // Header
+                VStack(spacing: 4) {
+                    Text("Memory Trace")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundColor(.warmBrown)
+                    
+                    Text("Preserve what matters")
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundColor(.warmBrown.opacity(0.6))
+                }
+                .padding(.top, 16)
+                
+                // Main action buttons
+                VStack(spacing: 14) {
+                    NavigationLink(value: AppRoute.chat) {
+                        ActionCardLabel(
+                            title: "Record Story",
+                            subtitle: "Capture a new memory",
+                            icon: "mic.fill",
+                            accentColor: .softTerracotta
+                        )
+                    }
+                    .glassEffect(.regular.tint(.softTerracotta.opacity(0.3)).interactive(), in: .rect(cornerRadius: 20))
+                    
+                    HStack(spacing: 14) {
+                        ActionCardSmall(
+                            title: "Memories",
+                            icon: "photo.stack.fill",
+                            accentColor: .deepTerracotta
+                        ) {
                             // Navigate to memories
                         }
                         
-                        NavigationButton(title: "Pills Monitoring", icon: "pills.circle.fill", color: .green) {
-                            // Navigate to pills monitoring
+                        ActionCardSmall(
+                            title: "Reminders",
+                            icon: "bell.fill",
+                            accentColor: .warmBrown
+                        ) {
+                            // Navigate to reminders
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                
+                // Recent memories section
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Text("Recent")
+                            .font(.system(size: 22, weight: .semibold, design: .rounded))
+                            .foregroundColor(.warmBrown)
+                        
+                        Spacer()
+                        
+                        if !savedRecordings.isEmpty {
+                            Text("\(savedRecordings.count) stories")
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundColor(.warmBrown.opacity(0.5))
                         }
                     }
                     .padding(.horizontal, 20)
-                }
-                
-                // Recent memories section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Recent Memories")
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 10)
                     
                     // Search bar
-                    HStack(spacing: 8) {
+                    HStack(spacing: 10) {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.warmBrown.opacity(0.5))
                         
-                        TextField("Search", text: $searchText)
-                            .font(.system(size: 17))
+                        TextField("Search memories...", text: $searchText)
+                            .font(.system(size: 16, design: .rounded))
+                            .foregroundColor(.warmBrown)
                         
                         if !searchText.isEmpty {
                             Button {
                                 searchText = ""
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.warmBrown.opacity(0.4))
                             }
                         }
                     }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding(14)
+                    .background(Color.white.opacity(0.6))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 20)
                     
                     if savedRecordings.isEmpty {
@@ -95,39 +159,39 @@ struct MainScreen: View {
                         VStack(spacing: 16) {
                             Image(systemName: "waveform.circle")
                                 .font(.system(size: 50))
-                                .foregroundColor(.black.opacity(0.4))
+                                .foregroundColor(.softTerracotta.opacity(0.6))
                             
                             Text("No recordings yet")
-                                .font(.system(size: 18, weight: .medium, design: .rounded))
-                                .foregroundColor(.black.opacity(0.6))
+                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .foregroundColor(.warmBrown.opacity(0.7))
                             
-                            Text("Tap \"Record Story\" to create your first memory")
+                            Text("Tap \"Record Story\" to capture\nyour first memory")
                                 .font(.system(size: 14, design: .rounded))
-                                .foregroundColor(.black.opacity(0.4))
+                                .foregroundColor(.warmBrown.opacity(0.5))
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 40)
+                        .padding(.vertical, 50)
                     }
                     else if filteredRecordings.isEmpty {
                         VStack(spacing: 16) {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 50))
-                                .foregroundColor(.black.opacity(0.4))
+                                .foregroundColor(.softTerracotta.opacity(0.6))
                             
                             Text("No memories found")
-                                .font(.system(size: 18, weight: .medium, design: .rounded))
-                                .foregroundColor(.black.opacity(0.6))
+                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .foregroundColor(.warmBrown.opacity(0.7))
                             
                             Text("No results for \"\(searchText)\"")
                                 .font(.system(size: 14, design: .rounded))
-                                .foregroundColor(.black.opacity(0.4))
+                                .foregroundColor(.warmBrown.opacity(0.5))
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 40)
+                        .padding(.vertical, 50)
                     }
-                     else{
+                    else {
                         ScrollView {
                             VStack(spacing: 12) {
                                 ForEach(filteredRecordings) { recording in
@@ -140,6 +204,7 @@ struct MainScreen: View {
                                 }
                             }
                             .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
                     }
                 }
@@ -150,102 +215,152 @@ struct MainScreen: View {
     }
     
     private func deleteRecording(_ recording: Recording) {
-        // Delete the audio file from disk
         AudioRecorderManager.deleteRecording(fileName: recording.audioFileName)
-        // Delete from SwiftData
         modelContext.delete(recording)
     }
 }
 
-struct NavigationButton: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            NavigationButtonLabel(title: title, icon: icon)
-        }
-        .glassEffect(.regular.tint(.black).interactive(), in: .rect(cornerRadius: 20))
-    }
-}
+// MARK: - Action Card (Large)
 
-struct NavigationButtonLabel: View {
+struct ActionCardLabel: View {
     let title: String
+    let subtitle: String
     let icon: String
+    let accentColor: Color
     
     var body: some View {
-        HStack(spacing: 15) {
-            Image(systemName: icon)
-                .font(.system(size: 28))
-                .foregroundColor(.white)
-                .frame(width: 50)
+        HStack(spacing: 16) {
+            // Icon with gradient background
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [accentColor, accentColor.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 52, height: 52)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(.white)
+            }
             
-            Text(title)
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundColor(.white)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundColor(.warmBrown)
+                
+                Text(subtitle)
+                    .font(.system(size: 14, design: .rounded))
+                    .foregroundColor(.warmBrown.opacity(0.6))
+            }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white.opacity(0.8))
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.warmBrown.opacity(0.4))
         }
-        .padding(20)
+        .padding(18)
     }
 }
+
+// MARK: - Action Card (Small)
+
+struct ActionCardSmall: View {
+    let title: String
+    let icon: String
+    let accentColor: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [accentColor, accentColor.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 46, height: 46)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                Text(title)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundColor(.warmBrown)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+        }
+        .glassEffect(.regular.tint(accentColor.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
+    }
+}
+
+// MARK: - Recording Row
 
 struct RecordingRow: View {
     let recording: Recording
     let onDelete: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(recording.languageFlag)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
                 
                 Text(recording.title)
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.black)
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundColor(.warmBrown)
+                    .lineLimit(1)
                 
                 Spacer()
                 
                 Text(recording.formattedDate)
-                    .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.black.opacity(0.6))
+                    .font(.system(size: 13, design: .rounded))
+                    .foregroundColor(.warmBrown.opacity(0.5))
             }
             
             HStack {
-                Image(systemName: "waveform")
-                    .foregroundColor(.black.opacity(0.5))
-                
-                Text(recording.formattedDuration)
-                    .font(.system(size: 15, design: .rounded))
-                    .foregroundColor(.black.opacity(0.7))
+                HStack(spacing: 6) {
+                    Image(systemName: "waveform")
+                        .font(.system(size: 12))
+                    Text(recording.formattedDuration)
+                        .font(.system(size: 14, design: .rounded))
+                }
+                .foregroundColor(.softTerracotta)
                 
                 Spacer()
                 
-                // Transcription status indicator
                 transcriptionStatusView
                 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
-                        .foregroundColor(.red.opacity(0.8))
+                        .font(.system(size: 14))
+                        .foregroundColor(.red.opacity(0.6))
                 }
             }
             
-            // Show transcript preview only when completed
+            // Transcript preview
             if recording.transcriptionStatus == .completed && !recording.transcript.isEmpty {
                 Text(recording.transcript)
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundColor(.black.opacity(0.5))
+                    .foregroundColor(.warmBrown.opacity(0.5))
                     .lineLimit(2)
+                    .padding(.top, 2)
             }
         }
         .padding(16)
-        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+        .background(Color.white.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
     
     @ViewBuilder
@@ -255,19 +370,19 @@ struct RecordingRow: View {
             HStack(spacing: 4) {
                 ProgressView()
                     .scaleEffect(0.6)
-                    .tint(.orange)
+                    .tint(.softTerracotta)
             }
             .padding(.trailing, 8)
             
         case .completed:
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green.opacity(0.8))
+                .foregroundColor(.green.opacity(0.7))
                 .font(.system(size: 14))
                 .padding(.trailing, 8)
             
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.red.opacity(0.8))
+                .foregroundColor(.red.opacity(0.7))
                 .font(.system(size: 14))
                 .padding(.trailing, 8)
         }
@@ -279,4 +394,3 @@ struct RecordingRow: View {
         MainScreen()
     }
 }
-
