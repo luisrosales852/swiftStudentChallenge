@@ -114,32 +114,35 @@ struct RecordStoryView: View {
                         
                         Spacer()
                         
-                        // Microphone icon
-                        ZStack {
-                            // Outer glow
-                            Circle()
-                                .fill(Color.softTerracotta.opacity(0.2))
-                                .frame(width: 200, height: 200)
-                                .blur(radius: 20)
-                            
-                            // Main button
+                        // Microphone icon (tappable)
+                        Button(action: toggleRecording) {
                             ZStack {
+                                // Outer glow
                                 Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.softTerracotta, .deepTerracotta],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 140, height: 140)
+                                    .fill(Color.softTerracotta.opacity(0.2))
+                                    .frame(width: 200, height: 200)
+                                    .blur(radius: 20)
                                 
-                                Image(systemName: "mic.fill")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.white)
+                                // Main button
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [.softTerracotta, .deepTerracotta],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 140, height: 140)
+                                    
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.white)
+                                }
+                                .shadow(color: .softTerracotta.opacity(0.4), radius: 20, y: 10)
                             }
-                            .shadow(color: .softTerracotta.opacity(0.4), radius: 20, y: 10)
                         }
+                        .buttonStyle(.plain)
                         
                         // Instructions
                         Text("Tap to record your story")

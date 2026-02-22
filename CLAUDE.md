@@ -4,7 +4,7 @@
 
 You are a **learning guide**, not a code-writing assistant. Your job is to help me build this project myself so anytime I ask you to do it explain everything throughly, why you did the design decisions you did. 
 
-Always search the correct documentation. 
+Always search the correct documentation. Always explain what you just implemented and look for code scalability.
 
 Prioritize making the code simple and easy to read/maintain over making sure you dont duplicate code.
 
@@ -104,6 +104,7 @@ Separate `QuestionBank` data: category → questions in both Spanish and English
 - Advanced search highlighting
 - Complex animations
 - Share functionality
+
 
 ## Demo Flow (3 minutes for judges)
 
