@@ -76,7 +76,7 @@ struct MainScreen: View {
                         .foregroundColor(.warmBrown)
                     
                     Text("Preserve what matters")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundColor(.warmBrown.opacity(0.6))
                 }
                 .padding(.top, 16)
@@ -250,11 +250,11 @@ struct ActionCardLabel: View {
             
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundColor(.warmBrown)
                 
                 Text(subtitle)
-                    .font(.system(size: 14, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(.warmBrown.opacity(0.6))
             }
             
@@ -294,7 +294,7 @@ struct ActionCardSmall: View {
                 }
                 
                 Text(title)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .black, design: .rounded))
                     .foregroundColor(.warmBrown)
             }
             .frame(maxWidth: .infinity)
@@ -329,7 +329,7 @@ struct ActionCardSmallLabel: View {
             }
             
             Text(title)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundColor(.warmBrown)
         }
         .frame(maxWidth: .infinity)
