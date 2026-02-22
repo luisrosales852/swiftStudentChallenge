@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingPopup: View {
     @State private var currentPage = 0
+    @State private var appeared = false
     let onComplete: () -> Void
     
     private let totalPages = 3
@@ -92,40 +93,37 @@ struct OnboardingPopup: View {
             }
         }
         .padding(24)
-        .frame(maxWidth: 380)
-        .glassEffect()
+        .frame(maxWidth: 400, maxHeight: 520)
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .scaleEffect(appeared ? 1 : 0.8)
+        .opacity(appeared ? 1 : 0)
+        .onAppear {
+            withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
+                appeared = true
+            }
+        }
     }
 }
 
-// MARK: - Page 1: About Me
 
 struct AboutMePage: View {
     var body: some View {
-        VStack(spacing: 20) {
-            // Photo placeholder
-            ZStack {
-                Circle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .frame(width: 120, height: 120)
-                
-                Image(systemName: "person.fill")
-                    .font(.system(size: 50))
-                    .foregroundStyle(.secondary)
-                
-                // TODO: Replace with actual image:
-                // Image("your_photo")
-                //     .resizable()
-                //     .scaledToFill()
-                //     .frame(width: 120, height: 120)
-                //     .clipShape(Circle())
-            }
-            
+        VStack(spacing: 28) {
+            // Photo
+            Image("LuisPhoto")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 120, height: 120)
+
+            Spacer()
+                .frame(height: 20)
+
             VStack(spacing: 8) {
-                Text("Hi, I'm [Your Name]")
+                Text("Hi, I'm Luis")
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
                 
-                Text("[Your bio goes here - a brief introduction about yourself and why you created this app.]")
+                Text("Im a 4th Semester CS student at @Tec de Monterrey in Monterrey Nuevo Leon, Part of the competitive robotics team @RoBorregos in the HRI team at Home competition and interested in Hackathons and Swift UI")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -135,7 +133,6 @@ struct AboutMePage: View {
     }
 }
 
-// MARK: - Page 2: About Alzheimer's
 
 struct AboutAlzheimersPage: View {
     var body: some View {
@@ -145,11 +142,11 @@ struct AboutAlzheimersPage: View {
                 .foregroundStyle(.purple)
             
             VStack(spacing: 8) {
-                Text("Understanding Alzheimer's")
+                Text("Understanding Alzheimer's (Brief Description)")
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
                 
-                Text("[Description about Alzheimer's disease - what it is, how it affects memory, and why preserving family stories matters.]")
+                Text("Alzheimer's disease affects over 55 million people worldwide. It gradually erases memories, making it harder for loved ones to recall their own life stories. By the time symptoms appear, years of precious memories may already be fading. It took my grandmother from my dads side 4 years ago and its now affecting my aunt. I used this app to capture her memories")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -159,7 +156,6 @@ struct AboutAlzheimersPage: View {
     }
 }
 
-// MARK: - Page 3: About the App
 
 struct AboutAppPage: View {
     var body: some View {
@@ -173,7 +169,7 @@ struct AboutAppPage: View {
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
                 
-                Text("[Description of what your app does - recording stories, transcribing, and preserving memories.]")
+                Text("Memory Trace helps you capture the voices and stories of your loved ones before they fade. Record conversations, get instant transcriptions, and translate between Spanish and English—preserving memories across generations and languages.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -217,3 +213,4 @@ struct FeatureRow: View {
         }
     }
 }
+

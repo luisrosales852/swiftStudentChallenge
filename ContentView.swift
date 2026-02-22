@@ -20,42 +20,44 @@ extension EnvironmentValues {
 }
 
 struct ContentView: View {
-    @State private var splashComplete = false
     @State private var navigationPath = NavigationPath()
-    @State private var showWelcomeSheet = true
+    @State private var showOnboarding = true
     
     var body: some View {
-        Group {
-            if !splashComplete {
-                // Show splash screen WITHOUT NavigationStack
-                // User cannot navigate back to this screen
-                SplashScreenView {
-                    withAnimation(.easeInOut(duration: 1)) {
-                        splashComplete = true
+        NavigationStack(path: $navigationPath) {
+            MainScreen()
+                .navigationDestination(for: AppRoute.self) { route in
+                    switch route {
+                    case .chat:
+                        PromptChatView()
+                    case .record:
+                        RecordStoryView()
                     }
                 }
-            } else {
-                // Show main app with NavigationStack
-                NavigationStack(path: $navigationPath) {
-                    MainScreen(showWelcomeSheet: $showWelcomeSheet)
-                        .navigationDestination(for: AppRoute.self) { route in
-                            switch route {
-                            case .chat:
-                                PromptChatView()
-                            case .record:
-                                RecordStoryView()
-                            }
-                        }
-                        .navigationDestination(for: Recording.self) { recording in
-                            RecordingDetailView(recording: recording)
-                        }
+                .navigationDestination(for: Recording.self) { recording in
+                    RecordingDetailView(recording: recording)
                 }
-                .environment(\.popToRoot) {
-                    navigationPath = NavigationPath()
+        }
+        .environment(\.popToRoot) {
+            navigationPath = NavigationPath()
+        }
+        // Onboarding popup overlay
+        .overlay {
+            if showOnboarding {
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    
+                    OnboardingPopup {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showOnboarding = false
+                        }
+                    }
+                    .transition(.scale.combined(with: .opacity))
                 }
-                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: showOnboarding)
     }
 }
 

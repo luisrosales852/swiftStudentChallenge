@@ -9,8 +9,6 @@ import SwiftUI
 import SwiftData
 
 struct MainScreen: View {
-    @Binding var showWelcomeSheet: Bool
-    
     @Namespace private var glassNamespace
     @Environment(\.modelContext) private var modelContext
     @State private var searchText = ""
@@ -149,9 +147,6 @@ struct MainScreen: View {
                 Spacer()
             }
         }
-        .sheet(isPresented: $showWelcomeSheet) {
-            WelcomeSheetView()
-        }
     }
     
     private func deleteRecording(_ recording: Recording) {
@@ -279,55 +274,9 @@ struct RecordingRow: View {
     }
 }
 
-struct WelcomeSheetView: View {
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            Image(systemName: "heart.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.red)
-            
-            Text("Welcome to Memory Trace")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .multilineTextAlignment(.center)
-            
-            Text("This app helps you preserve the stories of your loved ones. Record conversations with your family members — their childhood memories, immigration journeys, favorite recipes, and life wisdom — before those stories are lost to time.")
-                .font(.system(size: 17, design: .rounded))
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-            
-            Text("Every family has a story worth saving.")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .italic()
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            Button {
-                dismiss()
-            } label: {
-                Text("Get Started")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 30)
-        }
-        .padding()
-    }
-}
-
 #Preview {
     NavigationStack {
-        MainScreen(showWelcomeSheet: .constant(false))
+        MainScreen()
     }
 }
 
