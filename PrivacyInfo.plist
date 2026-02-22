@@ -4,6 +4,8 @@
 <dict>
     <key>NSMicrophoneUsageDescription</key>
     <string>Memory Trace needs access to your microphone to record your voice stories.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Memory Trace needs camera access to take photos for your memories.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>Memory Trace uses speech recognition to automatically transcribe your recorded stories.</string>
 </dict>

@@ -10,6 +10,44 @@ import SwiftData
 import AVFoundation
 import Translation
 import PhotosUI
+import UIKit
+
+struct CameraPicker: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+        
+        init(_ parent: CameraPicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.image = image
+            }
+            parent.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
 
 @Observable
 final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
@@ -104,6 +142,8 @@ struct RecordingDetailView: View {
     // Photo picker state
     @State private var selectedPhotoItems: [PhotosPickerItem] = []
     @State private var isLoadingPhotos = false
+    @State private var showCamera = false
+    @State private var capturedImage: UIImage?
     
     var body: some View {
         ZStack {
@@ -243,7 +283,17 @@ struct RecordingDetailView: View {
                             .foregroundColor(.warmBrown)
                         
                         Spacer()
-                        PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
+                        Menu {
+                            Button {
+                                showCamera = true
+                            } label: {
+                                Label("Take Photo", systemImage: "camera")
+                            }
+                            
+                            PhotosPicker(selection: $selectedPhotoItems, matching: .images) {
+                                Label("Choose from Library", systemImage: "photo.on.rectangle")
+                            }
+                        } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "plus.circle.fill")
                                 Text("Add")
@@ -305,6 +355,15 @@ struct RecordingDetailView: View {
             Task {
                 await loadSelectedPhotos()
             }
+        }
+        .onChange(of: capturedImage) {
+            if let image = capturedImage {
+                saveCapturedPhoto(image)
+                capturedImage = nil
+            }
+        }
+        .sheet(isPresented: $showCamera) {
+            CameraPicker(image: $capturedImage)
         }
     }
     
@@ -504,6 +563,13 @@ struct RecordingDetailView: View {
         // Clear selection after processing
         selectedPhotoItems.removeAll()
         isLoadingPhotos = false
+    }
+    
+    /// Save a photo captured from the camera
+    private func saveCapturedPhoto(_ image: UIImage) {
+        if let jpegData = image.jpegData(compressionQuality: 0.8) {
+            _ = recording.addPhoto(jpegData)
+        }
     }
 }
 
