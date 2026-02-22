@@ -76,7 +76,7 @@ struct MainScreen: View {
                         .foregroundColor(.warmBrown)
                     
                     Text("Preserve what matters")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundColor(.warmBrown.opacity(0.6))
                 }
                 .padding(.top, 16)
@@ -249,7 +249,7 @@ struct ActionCardLabel: View {
             
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(.warmBrown)
                 
                 Text(subtitle)
@@ -266,8 +266,6 @@ struct ActionCardLabel: View {
         .padding(18)
     }
 }
-
-// MARK: - Action Card (Small)
 
 struct ActionCardSmall: View {
     let title: String
@@ -304,8 +302,6 @@ struct ActionCardSmall: View {
         .glassEffect(.regular.tint(accentColor.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
     }
 }
-
-// MARK: - Recording Row
 
 struct RecordingRow: View {
     let recording: Recording

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// Note: Color theme is defined in MainScreen.swift
+
 struct OnboardingPopup: View {
     @State private var currentPage = 0
     @State private var appeared = false
@@ -56,7 +58,7 @@ struct OnboardingPopup: View {
                             Text("Back")
                         }
                         .font(.headline)
-                        .foregroundStyle(.warmBrown)
+                        .foregroundStyle(Color.warmBrown)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                     }
@@ -122,14 +124,9 @@ struct AboutMePage: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: 120, height: 120)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(Color.softTerracotta.opacity(0.5), lineWidth: 3)
-                )
 
             Spacer()
-                .frame(height: 10)
+                .frame(height: 20)
 
             VStack(spacing: 10) {
                 Text("Hi, I'm Luis")
@@ -247,7 +244,7 @@ struct FeatureRow: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundStyle(.softTerracotta)
+                .foregroundStyle(Color.softTerracotta)
                 .frame(width: 24)
             
             Text(text)
@@ -271,3 +268,4 @@ struct FeatureRow: View {
         }
     }
 }
+
