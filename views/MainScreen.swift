@@ -251,11 +251,11 @@ struct ActionCardLabel: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundColor(.warmBrown)
+                    .foregroundColor(.black)
                 
                 Text(subtitle)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(.warmBrown.opacity(0.6))
+                    .foregroundColor(.black.opacity(0.6))
             }
             
             Spacer()
@@ -295,7 +295,7 @@ struct ActionCardSmall: View {
                 
                 Text(title)
                     .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundColor(.warmBrown)
+                    .foregroundColor(.black)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
@@ -330,7 +330,7 @@ struct ActionCardSmallLabel: View {
             
             Text(title)
                 .font(.system(size: 15, weight: .black, design: .rounded))
-                .foregroundColor(.warmBrown)
+                .foregroundColor(.black)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)
