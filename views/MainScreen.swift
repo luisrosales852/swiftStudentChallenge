@@ -13,7 +13,6 @@ struct MainScreen: View {
     @Environment(\.modelContext) private var modelContext
     @State private var searchText = ""
     
-    // Query saved recordings from SwiftData, sorted by date (newest first)
     @Query(sort: \Recording.date, order: .reverse) private var savedRecordings: [Recording]
     
     private var filteredRecordings: [Recording] {
@@ -30,7 +29,6 @@ struct MainScreen: View {
     
     var body: some View {
         ZStack {
-            // Warm gradient background
             LinearGradient(
                 colors: [
                     Color.warmSand,
@@ -42,7 +40,6 @@ struct MainScreen: View {
             )
             .ignoresSafeArea()
             
-            // Subtle decorative shapes
             GeometryReader { geo in
                 Circle()
                     .fill(Color.softTerracotta.opacity(0.15))
@@ -59,7 +56,6 @@ struct MainScreen: View {
             .ignoresSafeArea()
             
             VStack(spacing: 24) {
-                // Header
                 VStack(spacing: 4) {
                     Text("Memory Trace")
                         .font(.system(size: 34, weight: .bold, design: .rounded))
@@ -71,7 +67,6 @@ struct MainScreen: View {
                 }
                 .padding(.top, 16)
                 
-                // Main action buttons
                 VStack(spacing: 14) {
                     NavigationLink(value: AppRoute.record) {
                         ActionCardLabel(
@@ -103,7 +98,6 @@ struct MainScreen: View {
                 }
                 .padding(.horizontal, 20)
                 
-                // Recent memories section
                 VStack(alignment: .leading, spacing: 14) {
                     HStack {
                         Text("Recent")
@@ -120,7 +114,6 @@ struct MainScreen: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    // Search bar
                     HStack(spacing: 10) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 16, weight: .medium))
@@ -145,7 +138,6 @@ struct MainScreen: View {
                     .padding(.horizontal, 20)
                     
                     if savedRecordings.isEmpty {
-                        // Empty state
                         VStack(spacing: 16) {
                             Image(systemName: "waveform.circle")
                                 .font(.system(size: 50))
@@ -202,6 +194,11 @@ struct MainScreen: View {
                 Spacer()
             }
         }
+        .onAppear {
+            Task {
+                await SpeechTranscriber.shared.requestPermission()
+            }
+        }
     }
     
     private func deleteRecording(_ recording: Recording) {
@@ -219,7 +216,6 @@ struct ActionCardLabel: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon with gradient background
             ZStack {
                 Circle()
                     .fill(
@@ -256,7 +252,6 @@ struct ActionCardLabel: View {
     }
 }
 
-// Label component for use inside NavigationLink
 struct ActionCardSmallLabel: View {
     let title: String
     let icon: String
@@ -331,7 +326,6 @@ struct RecordingRow: View {
                 }
             }
             
-            // Transcript preview
             if recording.transcriptionStatus == .completed && !recording.transcript.isEmpty {
                 Text(recording.transcript)
                     .font(.system(size: 14, design: .rounded))

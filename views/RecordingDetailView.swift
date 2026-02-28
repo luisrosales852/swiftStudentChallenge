@@ -66,7 +66,6 @@ final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
             return
         }
         
-        // Otherwise load a new file
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback)
@@ -148,7 +147,6 @@ struct RecordingDetailView: View {
     @Environment(\.popToRoot) private var popToRoot
     @Bindable var recording: Recording
     
-    // Optional flag to show photo prompt after saving a new recording
     var showPhotoPrompt: Bool = false
     
     @State private var playerManager = AudioPlayerManager()
@@ -163,12 +161,10 @@ struct RecordingDetailView: View {
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
     
-    // Toast state
     @State private var showingPhotoToast = false
     
     var body: some View {
         ZStack {
-            // Warm gradient background
             LinearGradient(
                 colors: [
                     Color.warmSand,
@@ -180,7 +176,6 @@ struct RecordingDetailView: View {
             )
             .ignoresSafeArea()
             
-            // Subtle decorative shapes
             GeometryReader { geo in
                 Circle()
                     .fill(Color.softTerracotta.opacity(0.12))
@@ -221,7 +216,6 @@ struct RecordingDetailView: View {
                             }
                         }
                         
-                        // Timeline slider and time labels
                         VStack(spacing: 4) {
                             Slider(
                                 value: Binding(
@@ -233,13 +227,11 @@ struct RecordingDetailView: View {
                                 in: 0...max(playerManager.duration, 0.01),
                                 onEditingChanged: { editing in
                                     if editing {
-                                        // Started dragging
                                         wasPlayingBeforeDrag = playerManager.isPlaying
                                         sliderValue = playerManager.currentTime
                                         isDraggingSlider = true
                                         playerManager.pause()
                                     } else {
-                                        // Finished dragging
                                         playerManager.seek(to: sliderValue)
                                         isDraggingSlider = false
                                         if wasPlayingBeforeDrag {
@@ -250,7 +242,6 @@ struct RecordingDetailView: View {
                             )
                             .tint(.white)
                             
-                            // Time labels
                             HStack {
                                 Text(formatTime(isDraggingSlider ? sliderValue : playerManager.currentTime))
                                     .font(.system(size: 12, weight: .medium, design: .monospaced))
@@ -269,7 +260,6 @@ struct RecordingDetailView: View {
                 .glassEffect(.regular.tint(.softTerracotta).interactive(), in: .rect(cornerRadius: 16))
                 .padding(.horizontal, 20)
                 
-                // Transcript section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Transcript")
@@ -282,7 +272,6 @@ struct RecordingDetailView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    // Transcript content
                     ScrollView {
                         transcriptContent
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -296,7 +285,6 @@ struct RecordingDetailView: View {
                     .translationPresentation(isPresented: $showTranslation, text: recording.transcript)
                 }
                 
-                // Photos section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Photos")
@@ -328,7 +316,6 @@ struct RecordingDetailView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    // Photos grid
                     photosGrid
                         .padding(.horizontal, 20)
                 }
@@ -336,7 +323,6 @@ struct RecordingDetailView: View {
                 Spacer()
             }
             
-            // Photo prompt toast
             if showingPhotoToast {
                 VStack {
                     Spacer()
@@ -384,16 +370,13 @@ struct RecordingDetailView: View {
             if let url = recording.audioFileURL{
                 playerManager.loadDuration(url: url)
             }
-            // Retry transcription if it was pending
             if recording.transcriptionStatus == .pending {
                 recording.startTranscription(modelContext: modelContext)
             }
-            // Show photo prompt toast if coming from recording flow
             if showPhotoPrompt {
                 withAnimation(.easeOut(duration: 0.3).delay(0.5)) {
                     showingPhotoToast = true
                 }
-                // Auto-dismiss after 4 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     withAnimation(.easeIn(duration: 0.3)) {
                         showingPhotoToast = false
@@ -579,7 +562,6 @@ struct RecordingDetailView: View {
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    // Show loading indicator if photos are being processed
                     if isLoadingPhotos {
                         ProgressView()
                             .tint(.softTerracotta)
@@ -598,14 +580,12 @@ struct RecordingDetailView: View {
         }
     }
     
-    /// Load selected photos, convert to JPEG, and save
     private func loadSelectedPhotos() async {
         guard !selectedPhotoItems.isEmpty else { return }
         
         isLoadingPhotos = true
         
         for item in selectedPhotoItems {
-            // Load the image data from PhotosPickerItem
             if let data = try? await item.loadTransferable(type: Data.self),
                let uiImage = UIImage(data: data),
                let jpegData = uiImage.jpegData(compressionQuality: 0.8) {
@@ -613,12 +593,10 @@ struct RecordingDetailView: View {
             }
         }
         
-        // Clear selection after processing
         selectedPhotoItems.removeAll()
         isLoadingPhotos = false
     }
     
-    /// Save a photo captured from the camera
     private func saveCapturedPhoto(_ image: UIImage) {
         if let jpegData = image.jpegData(compressionQuality: 0.8) {
             _ = recording.addPhoto(jpegData)
@@ -632,7 +610,6 @@ struct PhotoThumbnail: View {
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // Load image from file URL
             if let uiImage = UIImage(contentsOfFile: url.path) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -640,7 +617,6 @@ struct PhotoThumbnail: View {
                     .frame(width: 80, height: 80)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                // Placeholder if image fails to load
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.warmBrown.opacity(0.1))
                     .frame(width: 80, height: 80)
@@ -650,7 +626,6 @@ struct PhotoThumbnail: View {
                     }
             }
             
-            // Delete button
             Button(action: onDelete) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 20))

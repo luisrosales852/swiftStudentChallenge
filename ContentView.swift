@@ -1,3 +1,10 @@
+//
+//  ContentView.swift
+//  Swift Student Challenge Real
+//
+//  Created by LuisRosales on 04/01/26.
+//
+
 import SwiftUI
 
 enum AppRoute: Hashable {

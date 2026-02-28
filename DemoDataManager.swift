@@ -1,3 +1,10 @@
+//
+//  DemoDataManager.swift
+//  Swift Student Challenge Real
+//
+//  Handles seeding demo recordings on first launch
+//
+
 import Foundation
 import SwiftData
 import AVFoundation
@@ -47,10 +54,10 @@ struct DemoDataManager {
         }
         
         if let recording3 = createDemoRecording(
-            bundleAudioName: "audioAbuela1",
+            bundleAudioName: "audioabuela1",
             audioExtension: "m4a",
-            bundlePhotoNames: ["abuelita2"],
-            photoExtension: "jpg",
+            bundlePhotoNames: ["abuela2"],
+            photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita",
             language: "es-ES",
             documentsURL: documentsURL
@@ -60,10 +67,10 @@ struct DemoDataManager {
         }
         
         if let recording4 = createDemoRecording(
-            bundleAudioName: "audioAbuela2",
+            bundleAudioName: "audioabuela2",
             audioExtension: "m4a",
-            bundlePhotoNames: ["abuelita3"],
-            photoExtension: "png",
+            bundlePhotoNames: ["abuela1"],
+            photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita 2",
             language: "es-ES",
             documentsURL: documentsURL
@@ -73,10 +80,10 @@ struct DemoDataManager {
         }
         
         if let recording5 = createDemoRecording(
-            bundleAudioName: "audioAbuela3",
+            bundleAudioName: "audioabuela3",
             audioExtension: "m4a",
             bundlePhotoNames: [],
-            photoExtension: "jpg",
+            photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita 3",
             language: "es-ES",
             documentsURL: documentsURL
@@ -86,10 +93,10 @@ struct DemoDataManager {
         }
         
         if let recording6 = createDemoRecording(
-            bundleAudioName: "audioAbuela4",
+            bundleAudioName: "audioabuela4",
             audioExtension: "m4a",
             bundlePhotoNames: [],
-            photoExtension: "jpg",
+            photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita 4",
             language: "es-ES",
             documentsURL: documentsURL
@@ -99,10 +106,10 @@ struct DemoDataManager {
         }
         
         if let recording7 = createDemoRecording(
-            bundleAudioName: "audioAbuela5",
+            bundleAudioName: "audioabuela5",
             audioExtension: "m4a",
             bundlePhotoNames: [],
-            photoExtension: "jpg",
+            photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita 5",
             language: "es-ES",
             documentsURL: documentsURL
@@ -221,3 +228,4 @@ struct DemoDataManager {
         UserDefaults.standard.removeObject(forKey: hasSeededKey)
     }
 }
+

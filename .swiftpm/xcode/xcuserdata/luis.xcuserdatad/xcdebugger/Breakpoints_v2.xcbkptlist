@@ -14,8 +14,8 @@
             filePath = "views/RecordingDetailView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "151"
-            endingLineNumber = "151"
+            startingLineNumber = "150"
+            endingLineNumber = "150"
             landmarkName = "RecordingDetailView"
             landmarkType = "14">
          </BreakpointContent>
@@ -24,15 +24,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "100CDFC6-0ACC-4122-82A5-9734D5E17B96"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DemoDataManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "129"
-            endingLineNumber = "129"
-            landmarkName = "copyBundleFile(name:extension:to:)"
+            startingLineNumber = "137"
+            endingLineNumber = "137"
+            landmarkName = "createDemoRecording(bundleAudioName:audioExtension:bundlePhotoNames:photoExtension:placeholderTitle:language:documentsURL:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

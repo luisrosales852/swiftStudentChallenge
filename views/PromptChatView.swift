@@ -22,7 +22,6 @@ struct PromptChatView: View {
     
     var body: some View {
         ZStack {
-            // Warm gradient background
             LinearGradient(
                 colors: [
                     Color.warmSand,
@@ -36,7 +35,6 @@ struct PromptChatView: View {
             
             VStack(spacing: 0) {
                 if hasSelectedCategory {
-                    // Chat messages (shown after category selection)
                     ScrollViewReader { proxy in
                         ScrollView {
                             LazyVStack(spacing: 12) {
@@ -45,7 +43,6 @@ struct PromptChatView: View {
                                         .id(message.id)
                                 }
                                 
-                                // Typing indicator when generating
                                 if chat.isGenerating && chat.currentStreamingText.isEmpty {
                                     TypingIndicator()
                                         .id("typing")
@@ -66,7 +63,6 @@ struct PromptChatView: View {
                         }
                     }
                 } else {
-                    // Category picker (shown before chat starts)
                     categoryPickerView
                 }
                 
@@ -152,7 +148,6 @@ struct PromptChatView: View {
             }
         }
         .onDisappear {
-            // Reset when leaving the view so next visit starts fresh
             chat.reset()
             selectedCategory = nil
         }
@@ -184,7 +179,6 @@ struct PromptChatView: View {
                 }
                 .padding(.horizontal, 16)
                 
-                // Skip button
                 Button {
                     skipCategorySelection()
                 } label: {
@@ -204,7 +198,6 @@ struct PromptChatView: View {
         withAnimation(.easeInOut(duration: 0.3)) {
             selectedCategory = category
         }
-        // Start conversation with category context
         chat.prewarm(existingRecordings: recordings)
         Task {
             await chat.startConversation(existingRecordings: recordings, category: category)
@@ -213,9 +206,8 @@ struct PromptChatView: View {
     
     private func skipCategorySelection() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            selectedCategory = .childhood // Use a default, but conversation will be freeform
+            selectedCategory = .childhood 
         }
-        // Start freeform conversation
         chat.prewarm(existingRecordings: recordings)
         Task {
             await chat.startConversation(existingRecordings: recordings, category: nil)

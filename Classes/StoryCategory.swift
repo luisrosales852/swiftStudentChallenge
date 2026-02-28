@@ -2,10 +2,10 @@
 //  StoryCategory.swift
 //  Swift Student Challenge Real
 //
+// Created by Luis on 20/02/26
 
 import SwiftUI
 
-/// Categories for organizing story prompts and recording themes
 enum StoryCategory: String, CaseIterable {
     case childhood = "Childhood"
     case family = "Family"

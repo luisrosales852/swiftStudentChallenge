@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftData
 
-/// Represents a single photo with its parent recording context
 struct PhotoItem: Identifiable {
     let recording: Recording
     let photoURL: URL
@@ -27,7 +26,6 @@ struct MemoriesView: View {
     @State private var currentIndex: Int = 0
     @State private var navigateToRecording: Recording?
     
-    /// Flattened list of all photos across recordings that have photos
     private var photoItems: [PhotoItem] {
         var items: [PhotoItem] = []
         for recording in recordings {
@@ -56,11 +54,9 @@ struct MemoriesView: View {
     
     var body: some View {
         ZStack {
-            // Background
             Color.black.ignoresSafeArea()
             
             if photoItems.isEmpty {
-                // Empty state
                 emptyStateView
             } else {
                 TabView(selection: $currentIndex) {
@@ -78,11 +74,9 @@ struct MemoriesView: View {
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
                 .ignoresSafeArea()
                 
-                // Header overlay with recording title
                 headerOverlay
             }
             
-            // Close button (always visible)
             closeButton
         }
         .navigationBarHidden(true)
@@ -110,7 +104,6 @@ struct MemoriesView: View {
     
     private var headerOverlay: some View {
         VStack {
-            // Recording title at top
             if let recording = currentRecording {
                 VStack(spacing: 4) {
                     Text(recording.title)
@@ -129,7 +122,6 @@ struct MemoriesView: View {
             
             Spacer()
             
-            // Photo counter at bottom
             Text("\(currentIndex + 1) of \(photoItems.count)")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(.white.opacity(0.8))
@@ -170,7 +162,6 @@ struct PhotoPageView: View {
     
     var body: some View {
         ZStack {
-            // Separator line at leading edge when entering new recording
             if showSeparator {
                 HStack {
                     Rectangle()
@@ -181,7 +172,6 @@ struct PhotoPageView: View {
                 }
             }
             
-            // The photo
             if let uiImage = UIImage(contentsOfFile: item.photoURL.path) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -205,7 +195,6 @@ struct PhotoPageView: View {
                             }
                     )
                     .onTapGesture(count: 2) {
-                        // Double tap to toggle zoom
                         withAnimation(.spring(duration: 0.3)) {
                             if currentZoom > 1.0 {
                                 currentZoom = 1.0
@@ -224,7 +213,6 @@ struct PhotoPageView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .contentShape(Rectangle())
             } else {
-                // Placeholder if image fails to load
                 VStack(spacing: 12) {
                     Image(systemName: "photo")
                         .font(.system(size: 40))

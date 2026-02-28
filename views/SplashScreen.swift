@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// Note: Color theme is defined in MainScreen.swift
 
 struct OnboardingPopup: View {
     @State private var currentPage = 0
@@ -36,7 +35,6 @@ struct OnboardingPopup: View {
             .animation(.easeInOut, value: currentPage)
             .frame(height: 400)
             
-            // Page indicator dots
             HStack(spacing: 8) {
                 ForEach(0..<totalPages, id: \.self) { index in
                     Circle()
@@ -47,9 +45,7 @@ struct OnboardingPopup: View {
                 }
             }
             
-            // Navigation buttons
             HStack {
-                // Back button - only visible after first page
                 if currentPage > 0 {
                     Button(action: {
                         withAnimation {
@@ -73,7 +69,6 @@ struct OnboardingPopup: View {
                 
                 Spacer()
                 
-                // Next or Get Started button
                 Button(action: {
                     if currentPage < totalPages - 1 {
                         withAnimation {
@@ -122,7 +117,6 @@ struct OnboardingPopup: View {
 struct AboutMePage: View {
     var body: some View {
         VStack(spacing: 28) {
-            // Photo
             Image("LuisPhoto")
                 .resizable()
                 .scaledToFill()
@@ -193,15 +187,12 @@ struct AboutAlzheimersPage: View {
 struct GrandmaStoryPage: View {
     var body: some View {
         VStack(spacing: 20) {
-            // Placeholder image for grandma photo
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.warmBrown.opacity(0.15))
+            // Grandma photo
+            Image("abuela3")
+                .resizable()
+                .scaledToFill()
                 .frame(width: 120, height: 120)
-                .overlay(
-                    Image(systemName: "photo")
-                        .font(.system(size: 40))
-                        .foregroundColor(.warmBrown.opacity(0.4))
-                )
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             
             VStack(spacing: 12) {
                 Text("Why I Built This")

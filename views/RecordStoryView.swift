@@ -28,7 +28,6 @@ struct RecordStoryView: View {
     
     var body: some View {
         ZStack {
-            // Warm gradient background
             LinearGradient(
                 colors: [
                     Color.warmSand,
@@ -40,7 +39,6 @@ struct RecordStoryView: View {
             )
             .ignoresSafeArea()
             
-            // Subtle decorative shapes
             GeometryReader { geo in
                 Circle()
                     .fill(Color.softTerracotta.opacity(0.15))
@@ -51,27 +49,22 @@ struct RecordStoryView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Recording indicator
                 VStack(spacing: 20) {
                     
                     if isRecording {
                         Spacer()
-                        // Recording status message
                         Text("Recording your story...")
                             .font(.system(size: 20, weight: .medium, design: .rounded))
                             .foregroundColor(.warmBrown.opacity(0.7))
                         
-                        // Sound waves visualization
                         SoundWaveView()
                             .padding(.horizontal, 20)
                         
-                        // Time elapsed
                         Text(formatTime(recordingTime))
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .foregroundColor(.warmBrown)
                             .padding(.vertical, 10)
                         
-                        // Stop recording button
                         Button(action: toggleRecording) {
                             HStack(spacing: 15) {
                                 ZStack {
@@ -96,7 +89,6 @@ struct RecordStoryView: View {
                         .padding(.top, 10)
                         
                     } else {
-                        // Language selector
                         HStack(spacing: 12) {
                             LanguageButton(
                                 flag: "🇺🇸",
@@ -116,16 +108,13 @@ struct RecordStoryView: View {
                         
                         Spacer()
                         
-                        // Microphone icon (tappable)
                         Button(action: toggleRecording) {
                             ZStack {
-                                // Outer glow
                                 Circle()
                                     .fill(Color.softTerracotta.opacity(0.2))
                                     .frame(width: 200, height: 200)
                                     .blur(radius: 20)
                                 
-                                // Main button
                                 ZStack {
                                     Circle()
                                         .fill(
@@ -146,7 +135,6 @@ struct RecordStoryView: View {
                         }
                         .buttonStyle(.plain)
                         
-                        // Instructions
                         Text("Tap to record your story")
                             .font(.system(size: 20, weight: .medium, design: .rounded))
                             .foregroundColor(.warmBrown.opacity(0.7))
@@ -159,7 +147,6 @@ struct RecordStoryView: View {
                 
                 Spacer()
                 
-                // Control buttons (only shown when NOT recording)
                 if !isRecording {
                     VStack(spacing: 14) {
                         // Record button
@@ -184,7 +171,6 @@ struct RecordStoryView: View {
                         }
                         .glassEffect(.regular.tint(.softTerracotta).interactive(), in: .rect(cornerRadius: 20))
                         
-                        // Save button (only shown when has recorded)
                         if recordingTime > 0 {
                             Button(action: saveRecording) {
                                 HStack(spacing: 15) {
@@ -287,7 +273,6 @@ struct RecordStoryView: View {
             return
         }
         
-        // Create a new Recording and save to SwiftData
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
         dateFormatter.timeStyle = .short
@@ -307,10 +292,8 @@ struct RecordStoryView: View {
             try modelContext.save()
             print("Recording saved: \(title) (\(recordingTime) seconds)")
             
-            // Start async transcription in background
             recording.startTranscription(modelContext: modelContext)
             
-            // Navigate to detail view to prompt for photos
             savedRecording = recording
             recordingTime = 0
             currentRecordingFileName = nil
