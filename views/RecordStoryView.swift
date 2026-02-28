@@ -23,6 +23,8 @@ struct RecordStoryView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var languageChoice: String = "en-US"
+    @State private var savedRecording: Recording?
+    @State private var navigateToDetail = false
     
     var body: some View {
         ZStack {
@@ -234,6 +236,11 @@ struct RecordStoryView: View {
         } message: {
             Text(errorMessage)
         }
+        .navigationDestination(isPresented: $navigateToDetail) {
+            if let recording = savedRecording {
+                RecordingDetailView(recording: recording, showPhotoPrompt: true)
+            }
+        }
     }
     
     private func toggleRecording() {
@@ -303,16 +310,17 @@ struct RecordStoryView: View {
             // Start async transcription in background
             recording.startTranscription(modelContext: modelContext)
             
+            // Navigate to detail view to prompt for photos
+            savedRecording = recording
+            recordingTime = 0
+            currentRecordingFileName = nil
+            navigateToDetail = true
+            
         } catch {
             errorMessage = "Failed to save recording: \(error.localizedDescription)"
             showingError = true
             return
         }
-        
-        // Reset and go back to main screen
-        recordingTime = 0
-        currentRecordingFileName = nil
-        popToRoot()
     }
     
     private func formatTime(_ time: TimeInterval) -> String {

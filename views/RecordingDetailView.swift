@@ -49,6 +49,7 @@ struct CameraPicker: UIViewControllerRepresentable {
     }
 }
 
+@MainActor
 @Observable
 final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
     private var player: AVAudioPlayer?
@@ -121,8 +122,10 @@ final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
     private func startTimer() {
         stopTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            guard let self, let player = self.player else { return }
-            self.currentTime = player.currentTime
+            Task { @MainActor in
+                guard let self, let player = self.player else { return }
+                self.currentTime = player.currentTime
+            }
         }
     }
     
@@ -131,17 +134,22 @@ final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
         timer = nil
     }
     
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        isPlaying = false
-        currentTime = 0
-        stopTimer()
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor in
+            self.isPlaying = false
+            self.currentTime = 0
+            self.stopTimer()
+        }
     }
 }
 
 struct RecordingDetailView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.popToRoot) private var popToRoot
     @Bindable var recording: Recording
+    
+    // Optional flag to show photo prompt after saving a new recording
+    var showPhotoPrompt: Bool = false
     
     @State private var playerManager = AudioPlayerManager()
     @State private var showTranslation = false
@@ -154,6 +162,9 @@ struct RecordingDetailView: View {
     @State private var isLoadingPhotos = false
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
+    
+    // Toast state
+    @State private var showingPhotoToast = false
     
     var body: some View {
         ZStack {
@@ -324,6 +335,32 @@ struct RecordingDetailView: View {
                 
                 Spacer()
             }
+            
+            // Photo prompt toast
+            if showingPhotoToast {
+                VStack {
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        Image(systemName: "photo.badge.plus")
+                            .font(.system(size: 20))
+                        Text("Memory saved! Add photos?")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                    .glassEffect(.regular.tint(.softTerracotta), in: .capsule)
+                    .shadow(color: .warmBrown.opacity(0.2), radius: 10, y: 5)
+                    .padding(.bottom, 100)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onTapGesture {
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            showingPhotoToast = false
+                        }
+                    }
+                }
+            }
         }
         .navigationTitle("Recording")
         #if os(iOS)
@@ -333,7 +370,7 @@ struct RecordingDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
-                    dismiss()
+                    popToRoot()
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
@@ -350,6 +387,18 @@ struct RecordingDetailView: View {
             // Retry transcription if it was pending
             if recording.transcriptionStatus == .pending {
                 recording.startTranscription(modelContext: modelContext)
+            }
+            // Show photo prompt toast if coming from recording flow
+            if showPhotoPrompt {
+                withAnimation(.easeOut(duration: 0.3).delay(0.5)) {
+                    showingPhotoToast = true
+                }
+                // Auto-dismiss after 4 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        showingPhotoToast = false
+                    }
+                }
             }
         }
         .onDisappear {

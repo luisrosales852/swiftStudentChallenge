@@ -14,7 +14,7 @@ struct OnboardingPopup: View {
     @State private var appeared = false
     let onComplete: () -> Void
     
-    private let totalPages = 3
+    private let totalPages = 4
     
     var body: some View {
         VStack(spacing: 20) {
@@ -26,8 +26,11 @@ struct OnboardingPopup: View {
                 AboutAlzheimersPage()
                     .tag(1)
                 
-                AboutAppPage()
+                GrandmaStoryPage()
                     .tag(2)
+                
+                AboutAppPage()
+                    .tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
@@ -177,6 +180,41 @@ struct AboutAlzheimersPage: View {
                     .multilineTextAlignment(.center)
                 
                 Text("Alzheimer's disease affects over 55 million people worldwide. It gradually erases memories, making it harder for loved ones to recall their own life stories. It took my grandmother 4 years ago and is now affecting my aunt. I used this app to capture her memories.")
+                    .font(.subheadline)
+                    .foregroundColor(.warmBrown.opacity(0.7))
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+
+struct GrandmaStoryPage: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            // Placeholder image for grandma photo
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.warmBrown.opacity(0.15))
+                .frame(width: 120, height: 120)
+                .overlay(
+                    Image(systemName: "photo")
+                        .font(.system(size: 40))
+                        .foregroundColor(.warmBrown.opacity(0.4))
+                )
+            
+            VStack(spacing: 12) {
+                Text("Why I Built This")
+                    .font(.title2.bold())
+                    .foregroundColor(.warmBrown)
+                    .multilineTextAlignment(.center)
+                
+                Text("When I was little, I slept in my grandma's bed with her because I was afraid of the dark. She made me feel safe. Alzheimer's took her when I was 15, and I was never able to fully hear—or even have the courage to ask for—her stories. I was too young.")
+                    .font(.subheadline)
+                    .foregroundColor(.warmBrown.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                
+                Text("This is why I made this app: so now that I'm grown up, I can capture the memories of my aunt, who is suffering a similar illness and losing her memories.")
                     .font(.subheadline)
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)

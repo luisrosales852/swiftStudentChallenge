@@ -10,11 +10,11 @@ enum AppRoute: Hashable {
 
 // Environment key for popping to root
 struct PopToRootKey: EnvironmentKey {
-    static let defaultValue: @Sendable () -> Void = {}
+    static let defaultValue: @MainActor () -> Void = {}
 }
 
 extension EnvironmentValues {
-    var popToRoot: @Sendable () -> Void {
+    var popToRoot: @MainActor () -> Void {
         get { self[PopToRootKey.self] }
         set { self[PopToRootKey.self] = newValue }
     }

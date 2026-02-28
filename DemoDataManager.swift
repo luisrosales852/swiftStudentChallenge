@@ -14,22 +14,16 @@ struct DemoDataManager {
     
     private static let hasSeededKey = "hasSeededDemoData"
     
-    /// Seeds demo recordings if this is the first launch
-    /// - Parameter modelContext: The SwiftData model context
     static func seedIfNeeded(modelContext: ModelContext) {
-        // Check if already seeded
         guard !UserDefaults.standard.bool(forKey: hasSeededKey) else {
             return
         }
         
-        // Seed the demo data
         seedDemoRecordings(modelContext: modelContext)
         
-        // Mark as seeded
         UserDefaults.standard.set(true, forKey: hasSeededKey)
     }
     
-    /// Creates demo recordings with bundled audio and photos
     private static func seedDemoRecordings(modelContext: ModelContext) {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
