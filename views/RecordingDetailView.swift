@@ -107,6 +107,16 @@ final class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
         player?.currentTime = clampedTime
         currentTime = clampedTime
     }
+    
+    func loadDuration(url: URL){
+        guard currentURL != url else {return}
+        do {
+            let player = try AVAudioPlayer(contentsOf:url)
+            duration = player.duration
+        } catch{
+            print("Failed to load the duration")
+        }
+    }
         
     private func startTimer() {
         stopTimer()
@@ -334,6 +344,9 @@ struct RecordingDetailView: View {
             }
         }
         .onAppear {
+            if let url = recording.audioFileURL{
+                playerManager.loadDuration(url: url)
+            }
             // Retry transcription if it was pending
             if recording.transcriptionStatus == .pending {
                 recording.startTranscription(modelContext: modelContext)

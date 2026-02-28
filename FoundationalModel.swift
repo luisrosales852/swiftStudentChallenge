@@ -136,14 +136,16 @@ class PromptChat {
     
     func prewarm(existingRecordings: [Recording]) {
         let instructions = buildInstructions(from: existingRecordings, category: nil)
-        session = LanguageModelSession(instructions: instructions)
+        let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+        session = LanguageModelSession(model: model, instructions: instructions)
         session?.prewarm()
     }
     
     func startConversation(existingRecordings: [Recording], category: StoryCategory? = nil) async {
-        // Create session with category-aware instructions
+        // Create session with permissive mode for sensitive family content
         let instructions = buildInstructions(from: existingRecordings, category: category)
-        session = LanguageModelSession(instructions: instructions)
+        let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+        session = LanguageModelSession(model: model, instructions: instructions)
         
         let openingPrompt: String
         if let category = category {
@@ -158,6 +160,11 @@ class PromptChat {
     /// Send a user message and stream the response
     func sendMessage(_ text: String) async {
         guard let session = session else { return }
+        
+        // Trim to keep last 8 messages (4 user + 4 assistant) to stay within context limits
+        if messages.count > 8 {
+            messages = Array(messages.suffix(8))
+        }
         
         // Add user message
         let userMessage = ChatMessage(role: .user, text: text)

@@ -43,7 +43,6 @@ final class AudioRecorderManager {
         }
         let audioURL = documentsPath.appendingPathComponent(fileName)
         
-        // Recording settings for high quality audio
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 44100.0,
@@ -51,7 +50,6 @@ final class AudioRecorderManager {
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
         ]
         
-        // Create and start recorder
         audioRecorder = try AVAudioRecorder(url: audioURL, settings: settings)
         audioRecorder?.prepareToRecord()
         let started = audioRecorder?.record() ?? false
@@ -65,7 +63,6 @@ final class AudioRecorderManager {
         currentRecordingFileName = fileName
     }
     
-    /// Stop the current recording
     func stopRecording() -> (url: URL, fileName: String)? {
         guard isRecording, let recorder = audioRecorder else { return nil }
         
@@ -88,7 +85,6 @@ final class AudioRecorderManager {
         return result
     }
     
-    /// Cancel and delete the current recording
     func cancelRecording() {
         guard isRecording else { return }
         
@@ -105,7 +101,6 @@ final class AudioRecorderManager {
         currentRecordingFileName = nil
     }
     
-    /// Delete a recording file
     static func deleteRecording(fileName: String) {
         guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return

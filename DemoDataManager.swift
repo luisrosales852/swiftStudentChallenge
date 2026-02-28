@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import AVFoundation
+import UIKit
 
 struct DemoDataManager {
     
@@ -47,11 +48,11 @@ struct DemoDataManager {
             modelContext.insert(recording1)
         }
         
-        // Demo Recording 2: TiaReginaMemoria2 with piñatas, playa1
+        // Demo Recording 2: TiaReginaMemoria2 with pinatas, playa1
         if let recording2 = createDemoRecording(
             bundleAudioName: "TiaReginaMemoria2",
             audioExtension: "m4a",
-            bundlePhotoNames: ["piñatas", "playa1"],
+            bundlePhotoNames: ["pinatas", "playa1"],
             photoExtension: "jpeg",
             placeholderTitle: "Memoria de Tía Regina 2",
             language: "es-ES",
@@ -124,33 +125,48 @@ struct DemoDataManager {
         return recording
     }
     
-    /// Copies a file from the app bundle to the documents directory
+    /// Copies a file from the asset catalog to the documents directory
     /// - Returns: The new filename in documents, or nil if failed
     private static func copyBundleFile(
         name: String,
         extension ext: String,
         to documentsURL: URL
     ) -> String? {
-        // Find file in bundle
-        guard let bundleURL = Bundle.main.url(forResource: name, withExtension: ext) else {
-            print("File not found in bundle: \(name).\(ext)")
-            return nil
-        }
-        
         // Create unique filename to avoid conflicts
         let uniqueName = "\(name)_\(UUID().uuidString.prefix(8)).\(ext)"
         let destinationURL = documentsURL.appendingPathComponent(uniqueName)
         
-        // Copy file
         do {
             // Remove existing file if present
             if FileManager.default.fileExists(atPath: destinationURL.path) {
                 try FileManager.default.removeItem(at: destinationURL)
             }
-            try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
-            return uniqueName
+            
+            // Handle audio files (Data Sets in asset catalog)
+            if ext == "m4a" {
+                guard let asset = NSDataAsset(name: name) else {
+                    print("Audio asset not found: \(name)")
+                    return nil
+                }
+                try asset.data.write(to: destinationURL)
+                return uniqueName
+            }
+            
+            // Handle image files (Image Sets in asset catalog)
+            if ext == "jpeg" || ext == "jpg" || ext == "png" {
+                guard let image = UIImage(named: name),
+                      let imageData = image.jpegData(compressionQuality: 0.9) else {
+                    print("Image asset not found: \(name)")
+                    return nil
+                }
+                try imageData.write(to: destinationURL)
+                return uniqueName
+            }
+            
+            print("Unsupported file extension: \(ext)")
+            return nil
         } catch {
-            print("Failed to copy file \(name).\(ext): \(error)")
+            print("Failed to copy asset \(name).\(ext): \(error)")
             return nil
         }
     }
