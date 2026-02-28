@@ -135,21 +135,24 @@ class PromptChat {
     }
     
     func prewarm(existingRecordings: [Recording]) {
-        let instructions = buildInstructions(from: existingRecordings)
+        let instructions = buildInstructions(from: existingRecordings, category: nil)
         session = LanguageModelSession(instructions: instructions)
         session?.prewarm()
     }
     
-    /// Start the conversation with an initial greeting
-    func startConversation(existingRecordings: [Recording]) async {
-        // Create session if not prewarmed
-        if session == nil {
-            let instructions = buildInstructions(from: existingRecordings)
-            session = LanguageModelSession(instructions: instructions)
+    func startConversation(existingRecordings: [Recording], category: StoryCategory? = nil) async {
+        // Create session with category-aware instructions
+        let instructions = buildInstructions(from: existingRecordings, category: category)
+        session = LanguageModelSession(instructions: instructions)
+        
+        let openingPrompt: String
+        if let category = category {
+            openingPrompt = "I want to share a memory about \(category.rawValue.lowercased())."
+        } else {
+            openingPrompt = "Hello! I'd like to record a memory."
         }
         
-        // Send initial prompt to get the conversation started
-        await sendMessage("Hello! I'd like to record a memory.")
+        await sendMessage(openingPrompt)
     }
     
     /// Send a user message and stream the response
@@ -190,7 +193,6 @@ class PromptChat {
         currentStreamingText = ""
     }
     
-    /// Reset the conversation
     func reset() {
         session = nil
         messages = []
@@ -198,8 +200,7 @@ class PromptChat {
         currentStreamingText = ""
     }
     
-    /// Build instructions that include context about existing recordings
-    private func buildInstructions(from recordings: [Recording]) -> String {
+    private func buildInstructions(from recordings: [Recording], category: StoryCategory?) -> String {
         var context = ""
         
         if !recordings.isEmpty {
@@ -216,6 +217,21 @@ class PromptChat {
             """
         }
         
+        // Category-specific guidance
+        let categoryGuidance: String
+        if let category = category {
+            categoryGuidance = """
+            
+            The user wants to share a \(category.rawValue) memory. \(categoryPromptGuidance(for: category))
+            Start by asking a thoughtful, specific question about this topic.
+            """
+        } else {
+            categoryGuidance = """
+            
+            Help them explore different categories: Childhood, Family, Immigration, Career, Recipes, Traditions.
+            """
+        }
+        
         return """
             You are a warm, empathetic guide helping someone preserve their family memories.
             Your role is to help them discover what story they want to record next.
@@ -223,12 +239,30 @@ class PromptChat {
             Guidelines:
             - Be conversational and encouraging, like a friendly interviewer
             - Ask follow-up questions to help them find a specific memory
-            - Suggest categories: Childhood, Family, Immigration, Career, Recipes, Traditions
             - When they seem ready, confirm the topic and encourage them to start recording
             - Keep responses concise (2-3 sentences max)
             - Respond in English
+            \(categoryGuidance)
             \(context)
             """
+    }
+    
+    /// Returns specific prompt guidance for each category
+    private func categoryPromptGuidance(for category: StoryCategory) -> String {
+        switch category {
+        case .childhood:
+            return "Ask about early memories, favorite games, school days, or places they grew up."
+        case .family:
+            return "Ask about family members, relationships, gatherings, or family dynamics."
+        case .immigration:
+            return "Ask about journeys, leaving home, arriving somewhere new, or cultural transitions."
+        case .career:
+            return "Ask about first jobs, mentors, career-defining moments, or lessons learned."
+        case .recipes:
+            return "Ask about family recipes, cooking traditions, special meals, or food memories."
+        case .traditions:
+            return "Ask about holidays, celebrations, rituals, or customs passed down through generations."
+        }
     }
 }
 

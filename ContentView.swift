@@ -5,6 +5,7 @@ import SwiftUI
 enum AppRoute: Hashable {
     case chat
     case record
+    case memories
 }
 
 // Environment key for popping to root
@@ -20,6 +21,7 @@ extension EnvironmentValues {
 }
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var navigationPath = NavigationPath()
     @State private var showOnboarding = true
     
@@ -32,6 +34,8 @@ struct ContentView: View {
                         PromptChatView()
                     case .record:
                         RecordStoryView()
+                    case .memories:
+                        MemoriesView()
                     }
                 }
                 .navigationDestination(for: Recording.self) { recording in
@@ -58,6 +62,9 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: showOnboarding)
+        .onAppear {
+            DemoDataManager.seedIfNeeded(modelContext: modelContext)
+        }
     }
 }
 

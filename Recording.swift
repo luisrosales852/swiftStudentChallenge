@@ -8,15 +8,6 @@
 import Foundation
 import SwiftData
 
-@Model
-final class Item {
-    var timestamp: Date
-    
-    init(timestamp: Date) {
-        self.timestamp = timestamp
-    }
-}
-
 enum TranscriptionStatus: String, Codable {
     case pending
     case inProgress
@@ -181,7 +172,7 @@ final class Recording {
     /// Performs transcription off the main actor
     private static nonisolated func performTranscription(url: URL?, recordingId: UUID, locale: Locale) async -> Result<String, Error> {
         guard let url = url else {
-            print("Audio file not found for recording Hola \(recordingId)")
+            print("Audio file not found for recording \(recordingId)")
             return .failure(TranscriptionError.audioFileNotFound)
         }
         

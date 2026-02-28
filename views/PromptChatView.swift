@@ -14,6 +14,11 @@ struct PromptChatView: View {
     
     @State private var chat = PromptChat()
     @State private var userInput = ""
+    @State private var selectedCategory: StoryCategory? = nil
+    
+    private var hasSelectedCategory: Bool {
+        selectedCategory != nil
+    }
     
     var body: some View {
         ZStack {
@@ -30,34 +35,39 @@ struct PromptChatView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Chat messages
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(chat.messages) { message in
-                                ChatBubble(message: message)
-                                    .id(message.id)
+                if hasSelectedCategory {
+                    // Chat messages (shown after category selection)
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(chat.messages) { message in
+                                    ChatBubble(message: message)
+                                        .id(message.id)
+                                }
+                                
+                                // Typing indicator when generating
+                                if chat.isGenerating && chat.currentStreamingText.isEmpty {
+                                    TypingIndicator()
+                                        .id("typing")
+                                }
                             }
-                            
-                            // Typing indicator when generating
-                            if chat.isGenerating && chat.currentStreamingText.isEmpty {
-                                TypingIndicator()
-                                    .id("typing")
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                        .onChange(of: chat.messages.count) {
+                            withAnimation {
+                                proxy.scrollTo(chat.messages.last?.id, anchor: .bottom)
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                    }
-                    .onChange(of: chat.messages.count) {
-                        withAnimation {
-                            proxy.scrollTo(chat.messages.last?.id, anchor: .bottom)
+                        .onChange(of: chat.currentStreamingText) {
+                            withAnimation {
+                                proxy.scrollTo(chat.messages.last?.id, anchor: .bottom)
+                            }
                         }
                     }
-                    .onChange(of: chat.currentStreamingText) {
-                        withAnimation {
-                            proxy.scrollTo(chat.messages.last?.id, anchor: .bottom)
-                        }
-                    }
+                } else {
+                    // Category picker (shown before chat starts)
+                    categoryPickerView
                 }
                 
                 // Ready to record button
@@ -137,21 +147,78 @@ struct PromptChatView: View {
             }
         }
         .onAppear {
-            // Only start conversation if it's a fresh chat (no messages yet)
             if chat.messages.isEmpty {
                 chat.prewarm(existingRecordings: recordings)
-                startConversation()
             }
         }
         .onDisappear {
             // Reset when leaving the view so next visit starts fresh
             chat.reset()
+            selectedCategory = nil
         }
     }
     
-    private func startConversation() {
+    
+    private var categoryPickerView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Header
+                VStack(spacing: 8) {
+                    Text("What would you like to share?")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(.warmBrown)
+                    
+                    Text("Pick a category to get started")
+                        .font(.system(size: 16, design: .rounded))
+                        .foregroundColor(.warmBrown.opacity(0.7))
+                }
+                .padding(.top, 40)
+                
+                // Category grid
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                    ForEach(StoryCategory.allCases, id: \.self) { category in
+                        CategoryButton(category: category) {
+                            selectCategory(category)
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                
+                // Skip button
+                Button {
+                    skipCategorySelection()
+                } label: {
+                    Text("Skip — I'll explore on my own")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.warmBrown.opacity(0.6))
+                        .padding(.vertical, 12)
+                }
+                .padding(.top, 8)
+                
+                Spacer()
+            }
+        }
+    }
+    
+    private func selectCategory(_ category: StoryCategory) {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            selectedCategory = category
+        }
+        // Start conversation with category context
+        chat.prewarm(existingRecordings: recordings)
         Task {
-            await chat.startConversation(existingRecordings: recordings)
+            await chat.startConversation(existingRecordings: recordings, category: category)
+        }
+    }
+    
+    private func skipCategorySelection() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            selectedCategory = .childhood // Use a default, but conversation will be freeform
+        }
+        // Start freeform conversation
+        chat.prewarm(existingRecordings: recordings)
+        Task {
+            await chat.startConversation(existingRecordings: recordings, category: nil)
         }
     }
     
@@ -232,6 +299,42 @@ struct TypingIndicator: View {
                 animationPhase = 1
             }
         }
+    }
+}
+
+struct CategoryButton: View {
+    let category: StoryCategory
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [category.color, category.color.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 56, height: 56)
+                    
+                    Image(systemName: category.icon)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                Text(category.rawValue)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.warmBrown)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .background(Color.white.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
     }
 }
 

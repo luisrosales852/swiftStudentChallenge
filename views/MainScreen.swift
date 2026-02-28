@@ -8,16 +8,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Color Theme
-extension Color {
-    // Warm earthy palette
-    static let warmSand = Color(red: 0.96, green: 0.93, blue: 0.88)
-    static let softTerracotta = Color(red: 0.87, green: 0.58, blue: 0.47)
-    static let deepTerracotta = Color(red: 0.76, green: 0.42, blue: 0.32)
-    static let warmBrown = Color(red: 0.45, green: 0.32, blue: 0.25)
-    static let softAmber = Color(red: 0.95, green: 0.85, blue: 0.70)
-}
-
 struct MainScreen: View {
     @Namespace private var glassNamespace
     @Environment(\.modelContext) private var modelContext
@@ -94,14 +84,13 @@ struct MainScreen: View {
                     .glassEffect(.regular.tint(.softTerracotta.opacity(0.3)).interactive(), in: .rect(cornerRadius: 20))
                     
                     HStack(spacing: 14) {
-                        ActionCardSmall(
-                            title: "Memories",
-                            icon: "photo.stack.fill",
-                            accentColor: .deepTerracotta
-                        ) {
-                            // Navigate to memories
-                        }
-                        
+                        NavigationLink(value: AppRoute.memories){
+                            ActionCardSmallLabel(
+                                title: "Memories",
+                                icon: "photo.stack.fill",
+                                accentColor: .deepTerracotta
+                            )
+                        }.glassEffect(.regular.tint(Color.deepTerracotta.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
                         NavigationLink(value: AppRoute.chat) {
                             ActionCardSmallLabel(
                                 title: "Chat",
@@ -221,7 +210,6 @@ struct MainScreen: View {
     }
 }
 
-// MARK: - Action Card (Large)
 
 struct ActionCardLabel: View {
     let title: String
@@ -268,43 +256,7 @@ struct ActionCardLabel: View {
     }
 }
 
-struct ActionCardSmall: View {
-    let title: String
-    let icon: String
-    let accentColor: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [accentColor, accentColor.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 46, height: 46)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-                
-                Text(title)
-                    .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundColor(.black)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 18)
-        }
-        .glassEffect(.regular.tint(accentColor.opacity(0.15)).interactive(), in: .rect(cornerRadius: 18))
-    }
-}
-
-// Label version of ActionCardSmall for use inside NavigationLink
+// Label component for use inside NavigationLink
 struct ActionCardSmallLabel: View {
     let title: String
     let icon: String
