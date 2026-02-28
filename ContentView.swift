@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 enum AppRoute: Hashable {
     case chat
@@ -67,6 +68,22 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.3), value: showOnboarding)
         .onAppear {
             DemoDataManager.seedIfNeeded(modelContext: modelContext)
+            startPendingTranscriptions()
+        }
+    }
+    
+    private func startPendingTranscriptions() {
+        let context = modelContext
+        Task {
+            _ = await SpeechTranscriber.shared.requestPermission()
+            try? await Task.sleep(for: .milliseconds(500))
+            
+            let descriptor = FetchDescriptor<Recording>()
+            guard let recordings = try? context.fetch(descriptor) else { return }
+            
+            for recording in recordings where recording.transcriptionStatus == .pending {
+                await recording.startTranscription(modelContext: context)
+            }
         }
     }
 }
