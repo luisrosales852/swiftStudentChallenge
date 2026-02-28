@@ -1,11 +1,3 @@
-//
-//  SpeechTranscriber.swift
-//  Swift Student Challenge Real
-//
-//  Created by Luis on 10/02/26.
-//
-
-
 import Foundation
 import Speech
 
@@ -14,7 +6,6 @@ actor SpeechTranscriber {
     
     private init() {}
     
-    /// Request speech recognition permission
     func requestPermission() async -> Bool {
         await withCheckedContinuation { continuation in
             SFSpeechRecognizer.requestAuthorization { status in
@@ -24,13 +15,11 @@ actor SpeechTranscriber {
     }
     
     func transcribe(audioFileURL url: URL, locale: Locale) async throws -> String {
-        // Check permission
         let authorized = await requestPermission()
         guard authorized else {
             throw TranscriptionError.permissionDenied
         }
         
-        // Create speech recognizer
         guard let recognizer = SFSpeechRecognizer(locale: locale) else {
             throw TranscriptionError.recognizerUnavailable
         }
@@ -91,4 +80,3 @@ enum TranscriptionError: LocalizedError {
         }
     }
 }
-

@@ -1,10 +1,3 @@
-//
-//  AudioRecorderManager.swift
-//  Swift Student Challenge app
-//
-//  Created by LuisRosales on 06/02/26.
-//
-
 import Foundation
 import AVFoundation
 
@@ -20,13 +13,11 @@ final class AudioRecorderManager {
     
     private init() {}
     
-    /// Request microphone permission
     func requestPermission() async -> Bool {
         return await AVAudioApplication.requestRecordPermission()
     }
     
     func startRecording() async throws {
-        // Request permission first
         let authorized = await requestPermission()
         guard authorized else {
             throw RecordingError.permissionDenied
@@ -36,7 +27,6 @@ final class AudioRecorderManager {
         try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
         try session.setActive(true)
         
-        // Create unique filename
         let fileName = "recording_\(UUID().uuidString).m4a"
         guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             throw RecordingError.fileSystemError
@@ -69,8 +59,6 @@ final class AudioRecorderManager {
         recorder.stop()
         isRecording = false
         
-        
-        //Could be made simpler
         let result: (url: URL, fileName: String)?
         if let url = currentRecordingURL, let fileName = currentRecordingFileName {
             result = (url: url, fileName: fileName)
@@ -90,7 +78,6 @@ final class AudioRecorderManager {
         
         audioRecorder?.stop()
         
-        // Delete the file
         if let url = currentRecordingURL {
             try? FileManager.default.removeItem(at: url)
         }

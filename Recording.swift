@@ -1,10 +1,3 @@
-//
-//  Recording.swift
-//  Swift Student Challenge app
-//
-//  Created by Papasito on 18/12/25.
-//
-
 import Foundation
 import SwiftData
 
@@ -46,12 +39,11 @@ final class Recording {
         set { transcriptionStatusRaw = newValue.rawValue }
     }
     
-    var photoFileURLs: [URL]{
+    var photoFileURLs: [URL] {
         guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return []
         }
-        
-        return photoFileNames.map {documentsPath.appendingPathComponent($0)}
+        return photoFileNames.map { documentsPath.appendingPathComponent($0) }
     }
     
     var isTranscribing: Bool {
@@ -81,7 +73,6 @@ final class Recording {
         }
     }
     
-    /// Returns the full URL to the audio file in the documents directory
     var audioFileURL: URL? {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         return documentsPath?.appendingPathComponent(audioFileName)
@@ -103,7 +94,6 @@ final class Recording {
         }
     }
     
-    /// Delete an image file from disk only
     private static func deleteImageFile(fileName: String) {
         guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return
@@ -112,16 +102,12 @@ final class Recording {
         try? FileManager.default.removeItem(at: fileURL)
     }
     
-    /// Save image data and add to this recording's photoFileNames
-    /// - Parameter data: The image data (JPEG) to save
-    /// - Returns: true if successful, false otherwise
     func addPhoto(_ data: Data) -> Bool {
         guard let fileName = Self.saveImage(data) else { return false }
         photoFileNames.append(fileName)
         return true
     }
     
-    /// Remove a photo at index: deletes file from disk AND removes from photoFileNames array
     func removePhoto(at index: Int) {
         guard index >= 0 && index < photoFileNames.count else { return }
         let fileName = photoFileNames[index]
@@ -129,20 +115,19 @@ final class Recording {
         photoFileNames.remove(at: index)
     }
     
-    /// Delete all photos associated with this recording (call before deleting the recording)
     func deleteAllPhotos() {
         for fileName in photoFileNames {
             Self.deleteImageFile(fileName: fileName)
         }
         photoFileNames.removeAll()
     }
+    
     @MainActor
     func startTranscription(modelContext: ModelContext) {
         guard transcriptionStatus == .pending else { return }
         
         transcriptionStatus = .inProgress
         
-        // Capture values needed for background work
         let locale = Locale(identifier: languageIdentifier)
         let url = audioFileURL
         let recordingId = id
@@ -151,8 +136,6 @@ final class Recording {
         Task {
             let result = await Self.performTranscription(url: url, recordingId: recordingId, locale: locale)
             
-            
-            // Update model on main actor
             switch result {
             case .success(let text):
                 self.transcript = text
@@ -169,7 +152,6 @@ final class Recording {
         }
     }
     
-    /// Performs transcription off the main actor
     private static nonisolated func performTranscription(url: URL?, recordingId: UUID, locale: Locale) async -> Result<String, Error> {
         guard let url = url else {
             print("Audio file not found for recording \(recordingId)")
@@ -186,4 +168,3 @@ final class Recording {
         }
     }
 }
-

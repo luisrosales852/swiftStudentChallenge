@@ -1,10 +1,3 @@
-//
-//  DemoDataManager.swift
-//  Swift Student Challenge Real
-//
-//  Handles seeding demo recordings on first launch
-//
-
 import Foundation
 import SwiftData
 import AVFoundation
@@ -27,7 +20,6 @@ struct DemoDataManager {
     private static func seedDemoRecordings(modelContext: ModelContext) {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
-        // Demo Recording 1: TiaReginaMemoria1 with tia1, tia2, tia3
         if let recording1 = createDemoRecording(
             bundleAudioName: "TiaReginaMemoria1",
             audioExtension: "m4a",
@@ -37,12 +29,10 @@ struct DemoDataManager {
             language: "es-ES",
             documentsURL: documentsURL
         ) {
-            // Offset the date so it appears older
-            recording1.date = Date().addingTimeInterval(-86400 * 2) // 2 days ago
+            recording1.date = Date().addingTimeInterval(-86400 * 2)
             modelContext.insert(recording1)
         }
         
-        // Demo Recording 2: TiaReginaMemoria2 with pinatas, playa1
         if let recording2 = createDemoRecording(
             bundleAudioName: "TiaReginaMemoria2",
             audioExtension: "m4a",
@@ -52,12 +42,75 @@ struct DemoDataManager {
             language: "es-ES",
             documentsURL: documentsURL
         ) {
-            // Offset the date so it appears older but more recent than recording 1
-            recording2.date = Date().addingTimeInterval(-86400) // 1 day ago
+            recording2.date = Date().addingTimeInterval(-86400)
             modelContext.insert(recording2)
         }
         
-        // Save the context
+        if let recording3 = createDemoRecording(
+            bundleAudioName: "audioAbuela1",
+            audioExtension: "m4a",
+            bundlePhotoNames: ["abuelita2"],
+            photoExtension: "jpg",
+            placeholderTitle: "Memoria de Abuelita",
+            language: "es-ES",
+            documentsURL: documentsURL
+        ) {
+            recording3.date = Date().addingTimeInterval(-86400 * 3)
+            modelContext.insert(recording3)
+        }
+        
+        if let recording4 = createDemoRecording(
+            bundleAudioName: "audioAbuela2",
+            audioExtension: "m4a",
+            bundlePhotoNames: ["abuelita3"],
+            photoExtension: "png",
+            placeholderTitle: "Memoria de Abuelita 2",
+            language: "es-ES",
+            documentsURL: documentsURL
+        ) {
+            recording4.date = Date().addingTimeInterval(-86400 * 4)
+            modelContext.insert(recording4)
+        }
+        
+        if let recording5 = createDemoRecording(
+            bundleAudioName: "audioAbuela3",
+            audioExtension: "m4a",
+            bundlePhotoNames: [],
+            photoExtension: "jpg",
+            placeholderTitle: "Memoria de Abuelita 3",
+            language: "es-ES",
+            documentsURL: documentsURL
+        ) {
+            recording5.date = Date().addingTimeInterval(-86400 * 5)
+            modelContext.insert(recording5)
+        }
+        
+        if let recording6 = createDemoRecording(
+            bundleAudioName: "audioAbuela4",
+            audioExtension: "m4a",
+            bundlePhotoNames: [],
+            photoExtension: "jpg",
+            placeholderTitle: "Memoria de Abuelita 4",
+            language: "es-ES",
+            documentsURL: documentsURL
+        ) {
+            recording6.date = Date().addingTimeInterval(-86400 * 6)
+            modelContext.insert(recording6)
+        }
+        
+        if let recording7 = createDemoRecording(
+            bundleAudioName: "audioAbuela5",
+            audioExtension: "m4a",
+            bundlePhotoNames: [],
+            photoExtension: "jpg",
+            placeholderTitle: "Memoria de Abuelita 5",
+            language: "es-ES",
+            documentsURL: documentsURL
+        ) {
+            recording7.date = Date().addingTimeInterval(-86400 * 7)
+            modelContext.insert(recording7)
+        }
+        
         do {
             try modelContext.save()
             print("Demo data seeded successfully")
@@ -66,7 +119,6 @@ struct DemoDataManager {
         }
     }
     
-    /// Creates a single demo recording by copying files from bundle to documents
     private static func createDemoRecording(
         bundleAudioName: String,
         audioExtension: String,
@@ -77,7 +129,6 @@ struct DemoDataManager {
         documentsURL: URL
     ) -> Recording? {
         
-        // Copy audio file from bundle to documents
         guard let audioFileName = copyBundleFile(
             name: bundleAudioName,
             extension: audioExtension,
@@ -87,7 +138,6 @@ struct DemoDataManager {
             return nil
         }
         
-        // Copy photo files from bundle to documents
         var photoFileNames: [String] = []
         for photoName in bundlePhotoNames {
             if let photoFileName = copyBundleFile(
@@ -101,11 +151,9 @@ struct DemoDataManager {
             }
         }
         
-        // Get audio duration
         let audioURL = documentsURL.appendingPathComponent(audioFileName)
         let duration = getAudioDuration(url: audioURL)
         
-        // Create the recording with pending transcription status
         let recording = Recording(
             title: placeholderTitle,
             duration: duration,
@@ -119,24 +167,19 @@ struct DemoDataManager {
         return recording
     }
     
-    /// Copies a file from the asset catalog to the documents directory
-    /// - Returns: The new filename in documents, or nil if failed
     private static func copyBundleFile(
         name: String,
         extension ext: String,
         to documentsURL: URL
     ) -> String? {
-        // Create unique filename to avoid conflicts
         let uniqueName = "\(name)_\(UUID().uuidString.prefix(8)).\(ext)"
         let destinationURL = documentsURL.appendingPathComponent(uniqueName)
         
         do {
-            // Remove existing file if present
             if FileManager.default.fileExists(atPath: destinationURL.path) {
                 try FileManager.default.removeItem(at: destinationURL)
             }
             
-            // Handle audio files (Data Sets in asset catalog)
             if ext == "m4a" {
                 guard let asset = NSDataAsset(name: name) else {
                     print("Audio asset not found: \(name)")
@@ -146,7 +189,6 @@ struct DemoDataManager {
                 return uniqueName
             }
             
-            // Handle image files (Image Sets in asset catalog)
             if ext == "jpeg" || ext == "jpg" || ext == "png" {
                 guard let image = UIImage(named: name),
                       let imageData = image.jpegData(compressionQuality: 0.9) else {
@@ -165,7 +207,6 @@ struct DemoDataManager {
         }
     }
     
-    /// Gets the duration of an audio file
     private static func getAudioDuration(url: URL) -> TimeInterval {
         do {
             let audioPlayer = try AVAudioPlayer(contentsOf: url)
@@ -176,9 +217,7 @@ struct DemoDataManager {
         }
     }
     
-    /// Resets the seeded flag (useful for testing)
     static func resetSeedFlag() {
         UserDefaults.standard.removeObject(forKey: hasSeededKey)
     }
 }
-

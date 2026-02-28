@@ -1,13 +1,5 @@
-//
-//  FoundationalModel.swift
-//  Swift Student Challenge Real
-//
-//  Created by Luis on 14/02/26.
-//
-
 import SwiftUI
 import FoundationModels
-
 
 @Generable(description: "A title for a memory recording")
 struct GeneratedTitle {
@@ -35,13 +27,11 @@ actor TitleGenerator {
         
         let prompt = "Create a title (3-8 words) for this recording:\n\n\(trimmed)"
         
-        // Try structured generation first
         do {
             let session = LanguageModelSession(instructions: instructions)
             let response = try await session.respond(to: prompt, generating: GeneratedTitle.self)
             return response.content.title
         } catch LanguageModelSession.GenerationError.guardrailViolation {
-            // Fallback to permissive mode for sensitive content
             let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
             let session = LanguageModelSession(model: model, instructions: instructions)
             let response = try await session.respond(to: prompt)
@@ -85,13 +75,11 @@ actor SummaryGenerator {
         
         let prompt = "Summarize this memory in 1-2 sentences:\n\n\(trimmed)"
         
-        // Try structured generation first
         do {
             let session = LanguageModelSession(instructions: instructions)
             let response = try await session.respond(to: prompt, generating: GeneratedSummary.self)
             return response.content.summary
         } catch LanguageModelSession.GenerationError.guardrailViolation {
-            // Fallback to permissive mode for sensitive content
             let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
             let session = LanguageModelSession(model: model, instructions: instructions)
             let response = try await session.respond(to: prompt)
@@ -109,7 +97,6 @@ actor SummaryGenerator {
     }
 }
 
-/// A single message in the chat
 struct ChatMessage: Identifiable {
     let id = UUID()
     let role: Role
@@ -121,7 +108,6 @@ struct ChatMessage: Identifiable {
     }
 }
 
-/// Manages a conversational session to help users discover what to record
 @MainActor
 @Observable
 class PromptChat {
@@ -142,7 +128,6 @@ class PromptChat {
     }
     
     func startConversation(existingRecordings: [Recording], category: StoryCategory? = nil) async {
-        // Create session with permissive mode for sensitive family content
         let instructions = buildInstructions(from: existingRecordings, category: category)
         let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
         session = LanguageModelSession(model: model, instructions: instructions)
@@ -157,20 +142,16 @@ class PromptChat {
         await sendMessage(openingPrompt)
     }
     
-    /// Send a user message and stream the response
     func sendMessage(_ text: String) async {
         guard let session = session else { return }
         
-        // Trim to keep last 8 messages (4 user + 4 assistant) to stay within context limits
         if messages.count > 8 {
             messages = Array(messages.suffix(8))
         }
         
-        // Add user message
         let userMessage = ChatMessage(role: .user, text: text)
         messages.append(userMessage)
         
-        // Prepare assistant message placeholder
         let assistantMessage = ChatMessage(role: .assistant, text: "")
         messages.append(assistantMessage)
         let assistantIndex = messages.count - 1
@@ -179,17 +160,14 @@ class PromptChat {
         currentStreamingText = ""
         
         do {
-            // Stream the response token by token
             let stream = session.streamResponse(to: text)
             
             for try await snapshot in stream {
-                // Guard against reset() being called during streaming
                 guard assistantIndex < messages.count else { break }
                 currentStreamingText = snapshot.content
                 messages[assistantIndex].text = snapshot.content
             }
         } catch {
-            // Guard against reset() being called during streaming
             if assistantIndex < messages.count {
                 messages[assistantIndex].text = "Sorry, I couldn't respond. Please try again."
             }
@@ -224,7 +202,6 @@ class PromptChat {
             """
         }
         
-        // Category-specific guidance
         let categoryGuidance: String
         if let category = category {
             categoryGuidance = """
@@ -254,7 +231,6 @@ class PromptChat {
             """
     }
     
-    /// Returns specific prompt guidance for each category
     private func categoryPromptGuidance(for category: StoryCategory) -> String {
         switch category {
         case .childhood:
@@ -272,4 +248,3 @@ class PromptChat {
         }
     }
 }
-

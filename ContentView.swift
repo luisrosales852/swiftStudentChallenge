@@ -1,14 +1,11 @@
-
 import SwiftUI
 
-// Navigation routes for the app
 enum AppRoute: Hashable {
     case chat
     case record
     case memories
 }
 
-// Environment key for popping to root
 struct PopToRootKey: EnvironmentKey {
     static let defaultValue: @MainActor () -> Void = {}
 }
@@ -45,7 +42,6 @@ struct ContentView: View {
         .environment(\.popToRoot) {
             navigationPath = NavigationPath()
         }
-        // Onboarding popup overlay
         .overlay {
             if showOnboarding {
                 ZStack {
@@ -71,4 +67,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
