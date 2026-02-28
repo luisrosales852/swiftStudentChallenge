@@ -25,6 +25,7 @@ struct RecordStoryView: View {
     @State private var languageChoice: String = "en-US"
     @State private var savedRecording: Recording?
     @State private var navigateToDetail = false
+    @State private var showLanguageSelection = true
     
     var body: some View {
         ZStack {
@@ -227,6 +228,16 @@ struct RecordStoryView: View {
                 RecordingDetailView(recording: recording, showPhotoPrompt: true)
             }
         }
+        .confirmationDialog("What language will you be speaking?", isPresented: $showLanguageSelection, titleVisibility: .visible) {
+            Button("🇺🇸 English") {
+                languageChoice = "en-US"
+            }
+            Button("🇪🇸 Spanish") {
+                languageChoice = "es-ES"
+            }
+        } message: {
+            Text("This helps with accurate transcription")
+        }
     }
     
     private func toggleRecording() {
@@ -292,7 +303,9 @@ struct RecordStoryView: View {
             try modelContext.save()
             print("Recording saved: \(title) (\(recordingTime) seconds)")
             
-            recording.startTranscription(modelContext: modelContext)
+            Task {
+                await recording.startTranscription(modelContext: modelContext)
+            }
             
             savedRecording = recording
             recordingTime = 0

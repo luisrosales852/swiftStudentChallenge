@@ -132,7 +132,7 @@ struct AboutMePage: View {
                     .multilineTextAlignment(.center)
                 
                 Text("I'm a 4th Semester CS student at Tec de Monterrey in Monterrey, Nuevo León. Part of the competitive robotics team RoBorregos in the HRI team, and passionate about Hackathons and SwiftUI.")
-                    .font(.subheadline)
+                    .font(.subheadline.bold())
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
@@ -174,7 +174,7 @@ struct AboutAlzheimersPage: View {
                     .multilineTextAlignment(.center)
                 
                 Text("Alzheimer's disease affects over 55 million people worldwide. It gradually erases memories, making it harder for loved ones to recall their own life stories. It took my grandmother 4 years ago and is now affecting my aunt. I used this app to capture her memories.")
-                    .font(.subheadline)
+                    .font(.subheadline.bold())
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
@@ -188,7 +188,7 @@ struct GrandmaStoryPage: View {
     var body: some View {
         VStack(spacing: 20) {
             // Grandma photo
-            Image("abuela3")
+            Image("abuela2")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 120, height: 120)
@@ -201,12 +201,12 @@ struct GrandmaStoryPage: View {
                     .multilineTextAlignment(.center)
                 
                 Text("When I was little, I slept in my grandma's bed with her because I was afraid of the dark. She made me feel safe. Alzheimer's took her when I was 15, and I was never able to fully hear—or even have the courage to ask for—her stories. I was too young.")
-                    .font(.subheadline)
+                    .font(.subheadline.bold())
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
                 
                 Text("This is why I made this app: so now that I'm grown up, I can capture the memories of my aunt, who is suffering a similar illness and losing her memories.")
-                    .font(.subheadline)
+                    .font(.subheadline.bold())
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
@@ -248,7 +248,7 @@ struct AboutAppPage: View {
                     .multilineTextAlignment(.center)
                 
                 Text("Capture the voices and stories of your loved ones before they fade. Record conversations, get instant transcriptions, and translate between Spanish and English.")
-                    .font(.subheadline)
+                    .font(.subheadline.bold())
                     .foregroundColor(.warmBrown.opacity(0.7))
                     .multilineTextAlignment(.center)
             }

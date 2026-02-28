@@ -196,7 +196,11 @@ struct MainScreen: View {
         }
         .onAppear {
             Task {
-                await SpeechTranscriber.shared.requestPermission()
+                _ = await SpeechTranscriber.shared.requestPermission()
+                try? await Task.sleep(for: .milliseconds(500))
+                for recording in savedRecordings where recording.transcriptionStatus == .pending {
+                    await recording.startTranscription(modelContext: modelContext)
+                }
             }
         }
     }

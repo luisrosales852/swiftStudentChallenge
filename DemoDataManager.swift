@@ -56,7 +56,7 @@ struct DemoDataManager {
         if let recording3 = createDemoRecording(
             bundleAudioName: "audioabuela1",
             audioExtension: "m4a",
-            bundlePhotoNames: ["abuela2"],
+            bundlePhotoNames: ["abuela3"],
             photoExtension: "jpeg",
             placeholderTitle: "Memoria de Abuelita",
             language: "es-ES",

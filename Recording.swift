@@ -130,7 +130,7 @@ final class Recording {
     }
     
     @MainActor
-    func startTranscription(modelContext: ModelContext) {
+    func startTranscription(modelContext: ModelContext) async {
         guard transcriptionStatus == .pending else { return }
         
         transcriptionStatus = .inProgress
@@ -140,23 +140,21 @@ final class Recording {
         let recordingId = id
         let currentTitle = title
         
-        Task {
-            let result = await Self.performTranscription(url: url, recordingId: recordingId, locale: locale)
-            
-            switch result {
-            case .success(let text):
-                self.transcript = text
-                self.transcriptionStatus = .completed
-                let generatedTitle = await TitleGenerator.shared.generateTitleOrFallback(from: text, fallback: currentTitle)
-                self.title = generatedTitle
-                let generatedSummary = await SummaryGenerator.shared.generateSummaryOrFallback(from: text, fallback: "")
-                self.summary = generatedSummary
-            case .failure(let error):
-                self.transcriptionStatus = .failed
-                self.transcript = "Transcription failed: \(error.localizedDescription)"
-            }
-            try? modelContext.save()
+        let result = await Self.performTranscription(url: url, recordingId: recordingId, locale: locale)
+        
+        switch result {
+        case .success(let text):
+            self.transcript = text
+            self.transcriptionStatus = .completed
+            let generatedTitle = await TitleGenerator.shared.generateTitleOrFallback(from: text, fallback: currentTitle)
+            self.title = generatedTitle
+            let generatedSummary = await SummaryGenerator.shared.generateSummaryOrFallback(from: text, fallback: "")
+            self.summary = generatedSummary
+        case .failure(let error):
+            self.transcriptionStatus = .failed
+            self.transcript = "Transcription failed: \(error.localizedDescription)"
         }
+        try? modelContext.save()
     }
     
     private static nonisolated func performTranscription(url: URL?, recordingId: UUID, locale: Locale) async -> Result<String, Error> {

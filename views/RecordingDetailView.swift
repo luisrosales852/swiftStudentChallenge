@@ -371,7 +371,9 @@ struct RecordingDetailView: View {
                 playerManager.loadDuration(url: url)
             }
             if recording.transcriptionStatus == .pending {
-                recording.startTranscription(modelContext: modelContext)
+                Task {
+                    await recording.startTranscription(modelContext: modelContext)
+                }
             }
             if showPhotoPrompt {
                 withAnimation(.easeOut(duration: 0.3).delay(0.5)) {
@@ -542,7 +544,9 @@ struct RecordingDetailView: View {
     private func retryTranscription() {
         recording.transcriptionStatus = .pending
         recording.transcript = ""
-        recording.startTranscription(modelContext: modelContext)
+        Task {
+            await recording.startTranscription(modelContext: modelContext)
+        }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {

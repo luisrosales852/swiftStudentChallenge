@@ -105,18 +105,22 @@ struct MemoriesView: View {
     private var headerOverlay: some View {
         VStack {
             if let recording = currentRecording {
-                VStack(spacing: 4) {
-                    Text(recording.title)
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                    
-                    Text(recording.formattedDate)
-                        .font(.system(size: 14, design: .rounded))
-                        .foregroundColor(.white.opacity(0.7))
+                Button {
+                    navigateToRecording = recording
+                } label: {
+                    VStack(spacing: 4) {
+                        Text(recording.title)
+                            .font(.system(size: 20, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white)
+                        
+                        Text(recording.formattedDate)
+                            .font(.system(size: 14, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .padding(.top, 60)
             }
             
