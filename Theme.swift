@@ -6,9 +6,7 @@
 
 import SwiftUI
 
-// MARK: - Color Theme
 extension Color {
-    // Warm earthy palette
     static let warmSand = Color(red: 0.96, green: 0.93, blue: 0.88)
     static let softTerracotta = Color(red: 0.87, green: 0.58, blue: 0.47)
     static let deepTerracotta = Color(red: 0.76, green: 0.42, blue: 0.32)
